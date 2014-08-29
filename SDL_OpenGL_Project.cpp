@@ -47,9 +47,9 @@ int main(int argc, char *argv[])
 
 	//define vertices of our triangle
 	float vertices[] = {
-		0.0f, 0.5f,
-		0.5f, -0.5f,
-		-0.5f, -0.5f
+		0.0f, 0.5f, 1.0f, 0.0f, 0.0f,
+		0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+		-0.5f, -0.5f, 0.0f, 0.0f, 1.0f
 	};
 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -61,8 +61,11 @@ int main(int argc, char *argv[])
 	/*Create and compile the Vertex shader */
 	const char* vertexSource = GLSL(
 		in vec2 position;
+		in vec3 color;
+		out vec3 Color;
 
 	void main() {
+		Color = color;
 		gl_Position = vec4(position, 0.0, 1.0);
 	}
 	);
@@ -74,10 +77,11 @@ int main(int argc, char *argv[])
 
 	//Create and compile the fragment shader
 	const char* fragSource = GLSL(
+		in vec3 Color;
 		out vec4 outColor;
 		void main()
 		{
-			outColor = vec4(1.0f,1.0f,1.0f,1.0f);
+			outColor = vec4(Color,1.0f);
 		}
 	);
 
@@ -100,7 +104,15 @@ int main(int argc, char *argv[])
 	//parameter of the vertex shader.
 	GLint positionAttribute = glGetAttribLocation(ShaderProgram,"position");
 	glEnableVertexAttribArray(positionAttribute);
-	glVertexAttribPointer(positionAttribute,2,GL_FLOAT,GL_FALSE,0,0);
+	glVertexAttribPointer(positionAttribute,2,GL_FLOAT,GL_FALSE,5*sizeof(GLfloat),0);
+
+	GLint colAttrib = glGetAttribLocation(ShaderProgram, "color");
+	glEnableVertexAttribArray(colAttrib);
+	glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE,5*sizeof(GLfloat),(void*)(2 * sizeof(GLfloat)));
+
+	//Changing value of 'uniform' in the fragment shader
+	//GLint uniColor = glGetUniformLocation(ShaderProgram, "transparency");
+	//glUniform3f(uniColor, 1.0f, 0.0f, 0.0f);
 
 	SDL_Event e;
 	bool quit = false;
@@ -123,6 +135,8 @@ int main(int argc, char *argv[])
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+//		GLfloat time = SDL_GetTicks() / 100;
+//		glUniform1f(uniColor,(sin(time*0.3f) + 1.0f )/2.0f);
 		//draw tringles
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
