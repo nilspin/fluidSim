@@ -2,6 +2,18 @@
 Thumbs.db
 ehthumbs.db
 
+# Miscellaneous files created when building
+*.vcxproj
+*.vcxproj.filters
+*.idb
+*.pdb
+*.obj
+*.tlog
+*.log
+
+#DLL files
+*.dll
+
 # Folder config file
 Desktop.ini
 
