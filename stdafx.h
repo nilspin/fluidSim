@@ -1,3 +1,4 @@
+#include<GL/glew.h>
 #include<SDL.h>
 //#include<SDL_mixer.h>
 #include<SDL_image.h>
@@ -13,3 +14,4 @@
 #include<fstream>
 
 const int FPS = 30;
+#define GLSL(src) "#version 150 core\n" #src
