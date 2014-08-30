@@ -60,12 +60,13 @@ int main(int argc, char *argv[])
 
 	/*Create and compile the Vertex shader */
 	const char* vertexSource = GLSL(
+		uniform float alpha;
 		in vec2 position;
-		in vec3 color;
+		in vec3 color;//uniform vec3 color;//
 		out vec3 Color;
 
 	void main() {
-		Color = color;
+		Color = color*alpha;
 		gl_Position = vec4(position, 0.0, 1.0);
 	}
 	);
@@ -81,6 +82,7 @@ int main(int argc, char *argv[])
 		out vec4 outColor;
 		void main()
 		{
+			//Color *= alpha;
 			outColor = vec4(Color,1.0f);
 		}
 	);
@@ -111,8 +113,8 @@ int main(int argc, char *argv[])
 	glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE,5*sizeof(GLfloat),(void*)(2 * sizeof(GLfloat)));
 
 	//Changing value of 'uniform' in the fragment shader
-	//GLint uniColor = glGetUniformLocation(ShaderProgram, "transparency");
-	//glUniform3f(uniColor, 1.0f, 0.0f, 0.0f);
+	GLint uniColor = glGetUniformLocation(ShaderProgram, "alpha");
+
 
 	SDL_Event e;
 	bool quit = false;
@@ -135,8 +137,10 @@ int main(int argc, char *argv[])
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-//		GLfloat time = SDL_GetTicks() / 100;
-//		glUniform1f(uniColor,(sin(time*0.3f) + 1.0f )/2.0f);
+		//following 2 lines define "intensity" of color, i.e ranging from 0 to highest
+		GLfloat time = SDL_GetTicks() / 100;
+		glUniform1f(uniColor,(sin(time*0.4f) + 1.0f )/2.0f);
+
 		//draw tringles
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
