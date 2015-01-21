@@ -1,18 +1,24 @@
+//GL shit
 #include<GL/glew.h>
-#include<SDL.h>
-//#include<SDL_mixer.h>
+#include<gl/GLU.h>
+#include<gl/GL.h>
+
+//std shit
 #include<iostream>
 #include<cstring>
 #include<string>
-#include<SDL_opengl.h>
-#include<gl/GL.h>
-#include<gl/GLU.h>
+#include<sstream>
 #include<vector>
 #include<fstream>
+//SDL shit
+#include<SDL.h>
+#include<SDL_opengl.h>
+
+//GLM shit
 #include<glm.hpp>
 #include<gtc\matrix_transform.hpp>
 #include<gtc\type_ptr.hpp>
-#include<sstream>
 
-const int FPS = 30;
+
+//const int FPS = 30;
 #define GLSL(src) "#version 150 core\n" #src
