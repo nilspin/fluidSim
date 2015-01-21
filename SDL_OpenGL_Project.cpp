@@ -2,6 +2,7 @@
 //
 
 #include "stdafx.h"
+#include "camera.h"
 
 using namespace std;
 
@@ -17,51 +18,19 @@ void initGL()
 	
 }
 
-void load_obj(const char* filename, vector<glm::vec4> &vertices, vector<glm::vec3> &normals, vector<GLushort> &elements) {
-	ifstream in(filename, ios::in);
-	if (!in) { cerr << "Cannot open " << filename << endl; exit(1); }
-
-	string line;
-	while (getline(in, line)) {
-		if (line.substr(0, 2) == "v ") {
-			istringstream s(line.substr(2));
-			glm::vec4 v; s >> v.x; s >> v.y; s >> v.z; v.w = 1.0f;
-			vertices.push_back(v);
-		}
-		else if (line.substr(0, 2) == "f ") {
-			istringstream s(line.substr(2));
-			GLushort a, b, c;
-			s >> a; s >> b; s >> c;
-			a--; b--; c--;
-			elements.push_back(a); elements.push_back(b); elements.push_back(c);
-		}
-		else if (line[0] == '#') { /* ignoring this line */ }
-		else { /* ignoring this line */ }
-	}
-
-	normals.resize(vertices.size(), glm::vec3(0.0, 0.0, 0.0));
-	for (int i = 0; i < elements.size(); i += 3) {
-		GLushort ia = elements[i];
-		GLushort ib = elements[i + 1];
-		GLushort ic = elements[i + 2];
-		glm::vec3 normal = glm::normalize(glm::cross(
-			glm::vec3(vertices[ib]) - glm::vec3(vertices[ia]),
-			glm::vec3(vertices[ic]) - glm::vec3(vertices[ia])));
-		normals[ia] = normals[ib] = normals[ic] = normal;
-	}
-}
-
-
 int main(int argc, char *argv[])
 {
-
+	/* Don't use camera for now*/
+	Camera cam;
+	cam.SetMode(FREE);
+	cam.SetPosition(glm::vec3(0, 0, -10));
+	cam.SetLookAt(glm::vec3(0, 0, 0));
+	cam.SetClipping(.01, 50);
+	cam.SetFOV(45);
+	
 	Uint32 start = NULL;
 	SDL_Init(SDL_INIT_EVERYTHING);
-	/*
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-	*/
+
 	SDL_Window *window = SDL_CreateWindow("SDL_project", 200, 300, 1024,768, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE );
 	SDL_GLContext context = SDL_GL_CreateContext(window);
 
@@ -72,48 +41,72 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	
-	glGenBuffers(1,&VBO);
-	glBindBuffer(GL_ARRAY_BUFFER,VBO);
-
-	/*
-	vector<glm::vec4> suzane_verts;
-	vector<glm::vec3> suzane_normals;
-	vector<GLushort>  suzane_elements;
-
-	load_obj("suzanne.obj",suzane_verts,suzane_normals,suzane_elements);
-	*/
-	
-	
-
 	//Create Vertex Array Object
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 
-	//Now create a vertex buffer object
-	
+	//create a vertex buffer object
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
 	//define vertices of our triangle
 	GLfloat vertices[] = {
-		0.0f, 0.5f, 0.0f,
-		0.5f, -0.5f, 0.0f,
-		-0.5f, -0.5f, 0.0f
+		// front
+		-1.0, -1.0, 1.0,
+		1.0, -1.0, 1.0,
+		1.0, 1.0, 1.0,
+		-1.0, 1.0, 1.0,
+		// back
+		-1.0, -1.0, -1.0,
+		1.0, -1.0, -1.0,
+		1.0, 1.0, -1.0,
+		-1.0, 1.0, -1.0
 	};
+	
 	GLfloat colors[] = 
 	{
-		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
 		0.0f, 1.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 0.0f
+		0.0f, 1.0f, 1.0f, 0.0f,
+		1.0f, 0.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 1.0f, 0.0f,
+		1.0f, 1.0f, 0.0f, 0.0f,
+		1.0f, 1.0f, 1.0f, 0.0f
 	};
 	
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices)+sizeof(colors), NULL, GL_STATIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER,0,3*3*sizeof(GLfloat),vertices);
-	glBufferSubData(GL_ARRAY_BUFFER,3*3*sizeof(GLfloat),3*4*sizeof(GLfloat),colors);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, 8 * 3 * sizeof(GLfloat), vertices);
+	glBufferSubData(GL_ARRAY_BUFFER, 8 * 3 * sizeof(GLfloat), 8 * 4 * sizeof(GLfloat), colors);
 	//Note that we use GL_STATIC_DRAW because we want to send data to GPU only once thoughout the
 	//program
-	
+
+
+	GLushort indices[] = {
+		// front
+		0, 1, 2,
+		2, 3, 0,
+		// top
+		3, 2, 6,
+		6, 7, 3,
+		// back
+		7, 6, 5,
+		5, 4, 7,
+		// bottom
+		4, 5, 1,
+		1, 0, 4,
+		// left
+		4, 0, 3,
+		3, 7, 4,
+		// right
+		1, 5, 6,
+		6, 2, 1 };
+	//define an index buffer
+	GLuint indexBufferID;
+	glGenBuffers(1, &indexBufferID);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
 
 	glm::mat4 trans; //define a transformation matrix
 	
@@ -122,16 +115,18 @@ int main(int argc, char *argv[])
 	///Create and compile the Vertex shader
 	const char* vertexSource = GLSL(
 		uniform float alpha;
-		in vec2 position;
+		in vec3 position;
 		in vec3 color;//uniform vec3 color;//
 		out vec3 Color;
 		out vec2 texCoord;
 
-		uniform mat4 transform;
+		uniform mat4 model;
+		uniform mat4 view;
+		uniform mat4 proj;
 
 	void main() {
 		Color = color*alpha;
-		gl_Position = transform*vec4(position, 0.0, 1.0);
+		gl_Position = proj*view*model*vec4(position, 1.0);
 	}
 	);
 
@@ -174,15 +169,32 @@ int main(int argc, char *argv[])
 	glEnableVertexAttribArray(positionAttribute);
 
 	colAttrib = glGetAttribLocation(ShaderProgram, "color");
-	glVertexAttribPointer(colAttrib, 4, GL_FLOAT, GL_FALSE,0,BUFFER_OFFSET(3*3*sizeof(GLfloat)));
+	glVertexAttribPointer(colAttrib, 4, GL_FLOAT, GL_FALSE,0,BUFFER_OFFSET(8*3*sizeof(GLfloat)));
 	glEnableVertexAttribArray(colAttrib);
 
-	GLuint transformLoc = glGetUniformLocation(ShaderProgram, "transform");
+	GLuint transformLoc = glGetUniformLocation(ShaderProgram, "model");
+
+	glm::mat4 view = glm::lookAt(
+		glm::vec3(4.2f, 4.2f, 4.2f),
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 1.0f)
+		);
+
+	GLint uniView = glGetUniformLocation(ShaderProgram, "view");
+	glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
 	
+	glm::mat4 proj = glm::perspective(45.0f, 800.0f / 600.0f, 1.0f, 10.0f);
+	GLint uniProj = glGetUniformLocation(ShaderProgram, "proj");
+	glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
 
 	//Changing value of 'uniform' in the fragment shader
 	GLint uniColor = glGetUniformLocation(ShaderProgram, "alpha");
 
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
+	int size;  glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
+
+	glEnable(GL_DEPTH_TEST); //wierd shit happens if you don't do this
+	glEnable(GL_BLEND);
 
 	SDL_Event e;
 	bool quit = false;
@@ -191,32 +203,76 @@ int main(int argc, char *argv[])
 	{
 		while (SDL_PollEvent(&e) != 0)
 		{
-			//User requests quit
-			if (e.type == SDL_QUIT)
+			switch (e.type)
 			{
+			case SDL_QUIT:	//if X windowkey is pressed then quit
 				quit = true;
-			}
-			if (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_ESCAPE)
-			{
-				quit = true;
+			
+			case SDL_KEYDOWN :	//if ESC is pressed then quit
+				
+				switch (e.key.keysym.sym)
+				{
+				case SDLK_ESCAPE:
+					quit = true;
+					break;
+
+				case SDLK_w:
+					cam.Move(FORWARD);
+					std::cout << "W pressed \n";
+					break;
+
+				case SDLK_s:
+					cam.Move(BACK);
+					std::cout << "S pressed \n";
+					break;
+
+				case SDLK_a:
+					cam.Move(LEFT);
+					std::cout << "A pressed \n";
+					break;
+
+				case SDLK_d:
+					cam.Move(RIGHT);
+					std::cout << "D pressed \n";
+					break;
+
+				case SDLK_q:
+					cam.Move(DOWN);
+					std::cout << "Q pressed \n";
+					break;
+
+				case SDLK_e:
+					cam.Move(UP);
+					std::cout << "E pressed \n";
+					break;
+
+				}
+				break;
+
+			case SDL_MOUSEMOTION:
+				
+				cam.Move2D(e.motion.x,e.motion.y);
+				std::cout << "mouse moved by x=" << e.motion.x << " y=" << e.motion.y << "\n";
+				break;
 			}
 		}
 		//clear screen
 		glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
 		//following 2 lines define "intensity" of color, i.e ranging from 0 to highest
 		GLfloat time = SDL_GetTicks() ;
-		glUniform1f(uniColor,(sin(time*0.4f) + 1.0f )/2.0f);
+		glUniform1f(uniColor, 1.0f);//(sin(time*0.4f) + 1.0f )/2.0f);
 
-		trans = glm::rotate(glm::mat4(1),time*0.01f, glm::vec3(0, 0, 1));
+		trans = glm::rotate(glm::mat4(1),time*0.1f, glm::vec3(0, 0, 1));
 		glUniformMatrix4fv(transformLoc, 1, FALSE, glm::value_ptr(trans));
 		//draw tringles
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-
+		//glDrawArrays(GL_TRIANGLES,0,8);
+		
+		glDrawElements(GL_TRIANGLES,size/sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
 		SDL_GL_SwapWindow(window);
-		if (1000 / FPS > SDL_GetTicks() - start)
-			SDL_Delay(1000 / FPS - (SDL_GetTicks() - start));
+//		if (1000 / FPS > SDL_GetTicks() - start)
+//			SDL_Delay(1000 / FPS - (SDL_GetTicks() - start));
 	}
 	
 
