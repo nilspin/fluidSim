@@ -83,25 +83,7 @@ int main(int argc, char *argv[])
 	//program
 
 
-	GLushort indices[] = {
-		// front
-		0, 1, 2,
-		2, 3, 0,
-		// top
-		3, 2, 6,
-		6, 7, 3,
-		// back
-		7, 6, 5,
-		5, 4, 7,
-		// bottom
-		4, 5, 1,
-		1, 0, 4,
-		// left
-		4, 0, 3,
-		3, 7, 4,
-		// right
-		1, 5, 6,
-		6, 2, 1 };
+	GLushort indices[] = { 0, 1, 2,	2, 3, 0,	3, 2, 6,	6, 7, 3,	7, 6, 5,	5, 4, 7,	4, 5, 1,	1, 0, 4,	4, 0, 3,	3, 7, 4,	1, 5, 6,	6, 2, 1 };
 	//define an index buffer
 	GLuint indexBufferID;
 	glGenBuffers(1, &indexBufferID);
@@ -113,61 +95,16 @@ int main(int argc, char *argv[])
 
 	//=============================================================================================
 
-	//ShaderProgram *shaderProgram = new ShaderProgram();
-	//shaderProgram->initFromFiles("simple.vert", "simple.frag");
+	ShaderProgram *shaderProgram = new ShaderProgram();
+	shaderProgram->initFromFiles("simple.vert", "simple.frag");
 
-	//shaderProgram->addAttribute("position");
-	//shaderProgram->addAttribute("color");
+	shaderProgram->addAttribute("position");
+	shaderProgram->addAttribute("color");
 
-	//=============================================================================================
+	shaderProgram->addUniform("MVP");
 
-	///Create and compile the Vertex shader
-	const char* vertexSource = GLSL(
-		uniform float alpha;
-		in vec3 position;
-		in vec3 color;//uniform vec3 color;//
-		out vec3 Color;
-		out vec2 texCoord;
+	shaderProgram->use();
 
-		uniform mat4 MVP;
-//		uniform mat4 model;
-//		uniform mat4 view;
-//		uniform mat4 proj;
-
-	void main() {
-		Color = color*alpha;
-		gl_Position = /*proj*view*model*/MVP*vec4(position, 1.0);
-	}
-	);
-
-
-	GLuint VertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(VertexShader,1,&vertexSource,NULL);
-	glCompileShader(VertexShader);
-
-
-	//Create and compile the fragment shader
-	const char* fragSource = GLSL(
-		in vec3 Color;
-		out vec4 outColor;
-		void main()
-		{
-			outColor = vec4(Color,1.0f);
-		}
-	);
-
-	GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragShader,1,&fragSource,NULL);
-	glCompileShader(fragShader);
-
-	//Link vertex and fragment shaders into a single shader program
-	GLuint ShaderProg = glCreateProgram();
-	glAttachShader(ShaderProg,VertexShader);
-	glAttachShader(ShaderProg,fragShader);
-	glBindFragDataLocation(fragShader,0,"outColor");
-
-	glLinkProgram(ShaderProg);
-	glUseProgram(ShaderProg);
 
 #pragma endregion SHADER_FUNCTIONS
 
@@ -175,27 +112,23 @@ int main(int argc, char *argv[])
 
 	// The following line tells the CPU program that "vertexData" stuff goes into "posision"
 	//parameter of the vertex shader.
-	positionAttribute = glGetAttribLocation(ShaderProg,"position");
-	glVertexAttribPointer(positionAttribute,3,GL_FLOAT,GL_FALSE,0,0);
-	glEnableVertexAttribArray(positionAttribute);
+	glVertexAttribPointer(shaderProgram->attribute("position"),3,GL_FLOAT,GL_FALSE,0,0);
+	glEnableVertexAttribArray(shaderProgram->attribute("position"));
 
-	colAttrib = glGetAttribLocation(ShaderProg, "color");
-	glVertexAttribPointer(colAttrib, 4, GL_FLOAT, GL_FALSE,0,BUFFER_OFFSET(8*3*sizeof(GLfloat)));
-	glEnableVertexAttribArray(colAttrib);
+	glVertexAttribPointer(shaderProgram->attribute("color"), 4, GL_FLOAT, GL_FALSE,0,BUFFER_OFFSET(8*3*sizeof(GLfloat)));
+	glEnableVertexAttribArray(shaderProgram->attribute("color"));
 
 	glm::mat4 model; //define a transformation matrix for model in local coords
-	GLuint transformLoc = glGetUniformLocation(ShaderProg, "MVP");
-
-	glm::mat4 view = glm::lookAt(
+	
+	glm::mat4 view	= glm::lookAt(
 		glm::vec3(4.2f, 4.2f, 4.2f),
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(0.0f, 0.0f, 1.0f)
-		);
+		);	//view matrix
+
+	glm::mat4 proj = glm::perspective(45.0f, 800.0f / 600.0f, 1.0f, 10.0f);	//projection matrix
 	
-	glm::mat4 proj = glm::perspective(45.0f, 800.0f / 600.0f, 1.0f, 10.0f);
-	
-	//Changing value of 'uniform' in the fragment shader
-	GLint uniColor = glGetUniformLocation(ShaderProg, "alpha");
+	glm::mat4 MVP;
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
 	int size;  glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
@@ -203,8 +136,8 @@ int main(int argc, char *argv[])
 	glEnable(GL_DEPTH_TEST); //wierd shit happens if you don't do this
 	glEnable(GL_BLEND);
 	glClearColor(0.4f, 0.4f, 0.4f, 1.0f);	//clear screen
-	glm::mat4 MVP;
 
+	//here comes event handling part
 	SDL_Event e;
 	bool quit = false;
 	
@@ -265,27 +198,25 @@ int main(int argc, char *argv[])
 				break;
 			}
 		}
-				
+
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
 		//following 2 lines define "intensity" of color, i.e ranging from 0 to highest
 		GLfloat time = SDL_GetTicks() ;
-		glUniform1f(uniColor, (sin(time*0.01f) + 1.0f )/2.0f);
+		glUniform1f(uniColor, 1.0f);// (sin(time*0.01f) + 1.0f) / 2.0f);
 
-		model = glm::rotate(glm::mat4(1),time*0.1f, glm::vec3(0, 0, 1));
+		model = glm::rotate(glm::mat4(1),time*0.1f, glm::vec3(0, 0, 1));	//calculate on the fly
 		MVP = proj*view*model;
-		glUniformMatrix4fv(transformLoc, 1, FALSE, glm::value_ptr(MVP));
-
-		//draw tringles
-		//glDrawArrays(GL_TRIANGLES,0,8);
-		
+		glUniformMatrix4fv(shaderProgram->uniform("MVP"), 1, FALSE, glm::value_ptr(MVP));
+	
 		glDrawElements(GL_TRIANGLES,size/sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
 		SDL_GL_SwapWindow(window);
 //		if (1000 / FPS > SDL_GetTicks() - start)
 //			SDL_Delay(1000 / FPS - (SDL_GetTicks() - start));
 	}
 	
-
+	shaderProgram->disable();
+	shaderProgram->~ShaderProgram();
 	SDL_GL_DeleteContext(context);
 	SDL_Quit();
 
