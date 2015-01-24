@@ -15,7 +15,7 @@ work in the exact same way.
 #ifndef SHADER_PROGRAM_HPP
 #define SHADER_PROGRAM_HPP
 
-#include<GL/glew.h>
+#include<gl/glew.h>
 #include<gl/GLU.h>
 #include<gl/GL.h>
 
