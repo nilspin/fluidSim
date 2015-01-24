@@ -6,6 +6,11 @@ ObjLoader::ObjLoader()
 {
 }
 
+ObjLoader::ObjLoader(const char* filename)
+{
+	load_obj(filename, vertices, normals, elements);
+}
+
 void load_obj(const char* filename, vector<glm::vec4> &vertices, vector<glm::vec3> &normals, vector<GLushort> &elements) {
 	ifstream in(filename, ios::in);
 	if (!in) { cerr << "Cannot open " << filename << endl; exit(1); }
