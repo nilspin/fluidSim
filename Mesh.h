@@ -1,7 +1,6 @@
-#pragma once
-
 //GL shit
-#include <gl/glew.h>
+#include <Windows.h>
+#include <GL/glew.h>
 #include <gl/GLU.h>
 #include <gl/GL.h>
 
@@ -14,28 +13,32 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <glm.hpp>
 #include <sstream>
 #include <string>
 
+#ifndef MESH_H
+#define MESH_H
 
 class Mesh{
-private:
+public://private:
 	GLuint vbo_vertices, vbo_normals, ibo_elements;
 
-	vector<glm::vec4> vertices;
-	vector<glm::vec3> normals;
-	vector<GLushort> elements;
+	std::vector<glm::vec4> vertices;
+	std::vector<glm::vec3> normals;
+	std::vector<GLushort> elements;
 	glm::mat4 object2world;
 
+	GLushort *ptr = elements.data();
 	GLint attribute_v_coord = -1;
 	GLint attribute_v_normal = -1;
 	GLint uniform_m = -1, uniform_v = -1, uniform_p = -1;
 	GLint uniform_m_3x3_inv_transp = -1, uniform_v_inv = -1;
-public:
+//public:
 	Mesh();
 	~Mesh();
 	void upload();
 	void draw();
 	void draw_bbox();
 };
+
+#endif
