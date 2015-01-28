@@ -1,8 +1,11 @@
 //GL shit
-#include<GL/glew.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+#include<GL\glew.h>
 #include<gl/GLU.h>
 #include<gl/GL.h>
-
 //std shit
 #include<iostream>
 #include<cstring>
