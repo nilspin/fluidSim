@@ -15,6 +15,10 @@ work in the exact same way.
 #ifndef SHADER_PROGRAM_HPP
 #define SHADER_PROGRAM_HPP
 
+#ifndef _WIN32
+#include <Windows.h>
+#endif
+
 #include<gl/glew.h>
 #include<gl/GLU.h>
 #include<gl/GL.h>
