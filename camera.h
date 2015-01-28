@@ -61,7 +61,7 @@ public:
 	void SetClipping(double near_clip_distance, double far_clip_distance);
 
 	void SetDistance(double cam_dist);
-	void SetPos(int button, int state, int x, int y);
+	void SetPos(Uint8 button, Uint8 state, int x, int y);
 
 	//Getting Functions
 	CameraType GetMode();

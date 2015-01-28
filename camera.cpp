@@ -170,18 +170,22 @@ void Camera::Move2D(int x, int y) {
 	mouse_position = glm::vec3(x, y, 0);
 }
 
-void Camera::SetPos(int button, int state, int x, int y) {
+void Camera::SetPos(Uint8 button, Uint8 state, int x, int y) {
 	if (button == SDL_BUTTON_LEFT && state == SDL_PRESSED) {
 		camera_position_delta += camera_up * .05f;
+		std::cout << (Uint8)button << " pressed \n";
 	}
 	else if (button == SDL_BUTTON_RIGHT && state == SDL_PRESSED) {
 		camera_position_delta -= camera_up * .05f;
+		std::cout << (Uint8)button << " pressed \n";
 	}
-	else if (button == SDLK_LEFT && state == SDL_PRESSED) {
+	else if (button == SDL_BUTTON_LEFT && state == SDL_RELEASED) {
+		std::cout << (Uint8)button << " released \n";
 		move_camera = true;
 	}
-	else if (button == SDLK_LEFT && state == SDL_RELEASED) {
-		move_camera = true;//false
+	else if (button == SDL_BUTTON_RIGHT && state == SDL_RELEASED) {
+		std::cout << (Uint8)button << " released \n";
+		move_camera = false;
 	}
 	mouse_position = glm::vec3(x, y, 0);
 	

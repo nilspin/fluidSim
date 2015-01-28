@@ -196,6 +196,14 @@ int main(int argc, char *argv[])
 				cam.Move2D(e.motion.x,e.motion.y);
 				std::cout << "mouse moved by x=" << e.motion.x << " y=" << e.motion.y << "\n";
 				break;
+
+			case SDL_MOUSEBUTTONDOWN:
+				cam.SetPos(e.button.button, e.button.state, e.button.x, e.button.y);
+				break;
+
+			case SDL_MOUSEBUTTONUP:
+				cam.SetPos(e.button.button, e.button.state, e.button.x, e.button.y);
+				break;
 			}
 		}
 
@@ -207,7 +215,7 @@ int main(int argc, char *argv[])
 
 		model = glm::rotate(glm::mat4(1),time*0.1f, glm::vec3(0, 0, 1));	//calculate on the fly
 		MVP = proj*view*model;
-		glUniformMatrix4fv(shaderProgram->uniform("MVP"), 1, FALSE, glm::value_ptr(MVP));
+		glUniformMatrix4fv(shaderProgram->uniform("MVP"), 1, FALSE, glm::value_ptr(cam.projection*cam.view*model/*MVP*/));
 	
 		glDrawElements(GL_TRIANGLES,size/sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
 		SDL_GL_SwapWindow(window);
