@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "camera.h"
 #include "ShaderProgram.hpp"
+#include "Mesh.h"
 
 using namespace std;
 
@@ -90,7 +91,29 @@ int main(int argc, char *argv[])
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
-	
+
+/*Framebuffer shit
+	GLuint FBO;
+	glGenFramebuffers(1,&FBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+
+	//now create a texture
+	GLuint renderTexture;
+	glGenTextures(1, &renderTexture);
+	glBindTexture(GL_TEXTURE_2D, renderTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1024, 768, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	//filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	*/
+
+	/*Object loading shit*/
+	Mesh *suzanne = new Mesh("suzanne.obj");
+//	suzanne->upload();
+//	vector<glm::vec4> suzanne_verts;
+//	vector<glm::vec3> suzanne_normals;
+//	vector<char16_t> suzanne_elements;
+
 #pragma region SHADER_FUNCTIONS
 
 	//=============================================================================================
@@ -215,8 +238,9 @@ int main(int argc, char *argv[])
 
 		model = glm::rotate(glm::mat4(1),time*0.1f, glm::vec3(0, 0, 1));	//calculate on the fly
 		MVP = proj*view*model;
-		glUniformMatrix4fv(shaderProgram->uniform("MVP"), 1, FALSE, glm::value_ptr(cam.projection*cam.view*model/*MVP*/));
+		glUniformMatrix4fv(shaderProgram->uniform("MVP"), 1, FALSE, glm::value_ptr(MVP));
 	
+//		suzanne->draw();
 		glDrawElements(GL_TRIANGLES,size/sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
 		SDL_GL_SwapWindow(window);
 //		if (1000 / FPS > SDL_GetTicks() - start)
