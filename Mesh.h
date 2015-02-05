@@ -36,9 +36,11 @@ public://private:
 //public:
 	Mesh();
 	~Mesh();
+	Mesh(const char* filename);
 	void upload();
 	void draw();
 	void draw_bbox();
+	void load_obj(const char* filename, std::vector<glm::vec4> &vertices, std::vector<glm::vec3> &normals, std::vector<GLushort> &elements);
 };
 
 #endif
