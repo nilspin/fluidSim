@@ -29,19 +29,23 @@ int main(int argc, char *argv[])
 	cam.SetLookAt(glm::vec3(0, 0, 0));
 	cam.SetClipping(.01, 50);
 	cam.SetFOV(45);
-	
+
+#pragma region SDL_FUNCTIONS;
 	Uint32 start = NULL;
 	SDL_Init(SDL_INIT_EVERYTHING);
 
 	SDL_Window *window = SDL_CreateWindow("SDL_project", 200, 300, 1024,768, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE );
 	SDL_GLContext context = SDL_GL_CreateContext(window);
 
+	//Init GLEW
 	GLenum err = glewInit();
 	if (GLEW_OK != err)
 	{
 		cout << "Sorry, but GLEW failed to load.";
 		return 1;
 	}
+
+#pragma endregion SDL_FUNCTIONS;
 
 	//Create Vertex Array Object
 	glGenVertexArrays(1, &VAO);
@@ -84,7 +88,7 @@ int main(int argc, char *argv[])
 	//program
 
 
-	GLushort indices[] = { 0, 1, 2,	2, 3, 0,	3, 2, 6,	6, 7, 3,	7, 6, 5,	5, 4, 7,	4, 5, 1,	1, 0, 4,	4, 0, 3,	3, 7, 4,	1, 5, 6,	6, 2, 1 };
+	GLushort indices[] = { 0, 1, 2,   2, 3, 0,	3, 2, 6,	6, 7, 3,	7, 6, 5,	5, 4, 7,	4, 5, 1,	1, 0, 4,	4, 0, 3,	3, 7, 4,	1, 5, 6,	6, 2, 1 };
 	//define an index buffer
 	GLuint indexBufferID;
 	glGenBuffers(1, &indexBufferID);
@@ -92,7 +96,7 @@ int main(int argc, char *argv[])
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
 
-/*Framebuffer shit
+#pragma region FBO_FUNCTIONS
 	GLuint FBO;
 	glGenFramebuffers(1,&FBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
@@ -105,10 +109,28 @@ int main(int argc, char *argv[])
 	//filtering
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	*/
+	//depth buffer
+	GLuint depthrenderbuffer;
+	glGenRenderbuffers(1, &depthrenderbuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1024, 768);//specify storage
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
+	//set renderTexture as our color attachment#0
 
-	/*Object loading shit*/
-	Mesh *suzanne = new Mesh("suzanne.obj");
+	//now set the list of draw buffers (here we just need 2- color and depth)
+	GLenum drawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, drawBuffers);//this is finally where we tell the driver to draw to this paricular framebuffer
+
+	//in case something goes wrong : 
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		return false;
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);//this is default : draw to screen
+
+#pragma endregion FBO_FUNCTIONS	
+
+/*Object loading code*/
+//	Mesh *suzanne = new Mesh("suzanne.obj");
 //	suzanne->upload();
 //	vector<glm::vec4> suzanne_verts;
 //	vector<glm::vec3> suzanne_normals;
@@ -124,6 +146,7 @@ int main(int argc, char *argv[])
 	shaderProgram->addAttribute("position");
 	shaderProgram->addAttribute("color");
 
+	shaderProgram->addUniform("renderTexture");
 	shaderProgram->addUniform("MVP");
 
 	shaderProgram->use();
@@ -156,7 +179,7 @@ int main(int argc, char *argv[])
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
 	int size;  glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
 
-	glEnable(GL_DEPTH_TEST); //wierd shit happens if you don't do this
+	glEnable(GL_DEPTH_TEST); //wierd behavior happens if we don't do this
 	glEnable(GL_BLEND);
 	glClearColor(0.4f, 0.4f, 0.4f, 1.0f);	//clear screen
 
