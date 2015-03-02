@@ -153,16 +153,18 @@ int main(int argc, char *argv[])
 #pragma region SHADER_FUNCTIONS
 
 	//=============================================================================================
-
+	//Shader that contains main logic
 	ShaderProgram *MainShader = new ShaderProgram();
 	MainShader->initFromFiles("MainShader.vert", "MainShader.frag");
-
 	MainShader->addAttribute("position");
 	MainShader->addAttribute("color");
-
-//	shaderProgram->addUniform("renderTexture");
 	MainShader->addUniform("MVP");
 
+	//another shader to sample from texture and draw on quadVBO
+	ShaderProgram *quadProgram = new ShaderProgram();
+	quadProgram->initFromFiles("quadProgram.vert","quadProgram.frag");
+	quadProgram->addAttribute("quad_vertices");
+	quadProgram->addUniform("textureSampler");
 
 #pragma endregion SHADER_FUNCTIONS
 
@@ -286,12 +288,38 @@ int main(int argc, char *argv[])
 
 		glDrawElements(GL_TRIANGLES,size/sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
 
-		//By now we have successfully rendered to our texture. Now we will draw on screen
-
+		//By now we have successfully rendered to our texture. We will now draw on screen
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
 		glViewport(0, 0, 1024, 768);
 
+		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
+		//use our quad shader
+		quadProgram->use();
+
+		//Bind out texture in texture unit #0
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, renderTexture);
+
+		//set our 'textureSampler' sampler to use texture unit 0
+		glUniform1i(quadProgram->uniform("textureSampler"),0);
+
+		//1st attribute : quad vertices
+		glEnableVertexAttribArray(0);	//note that this corresponds to the layout=0 in shader
+		glBindBuffer(GL_VERTEX_ARRAY,quad_vertexbuffer);
+		glVertexAttribPointer(
+			0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+			3,                  // size
+			GL_FLOAT,           // type
+			GL_FALSE,           // normalized?
+			0,                  // stride
+			0					// array buffer offset
+			);
+
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDisableVertexAttribArray(0);
+
+		//swap buffers
 		SDL_GL_SwapWindow(window);
 //		if (1000 / FPS > SDL_GetTicks() - start)
 //			SDL_Delay(1000 / FPS - (SDL_GetTicks() - start));
