@@ -154,16 +154,14 @@ int main(int argc, char *argv[])
 
 	//=============================================================================================
 
-	ShaderProgram *shaderProgram = new ShaderProgram();
-	shaderProgram->initFromFiles("MainShader.vert", "MainShader.frag");
+	ShaderProgram *MainShader = new ShaderProgram();
+	MainShader->initFromFiles("MainShader.vert", "MainShader.frag");
 
-	shaderProgram->addAttribute("position");
-	shaderProgram->addAttribute("color");
+	MainShader->addAttribute("position");
+	MainShader->addAttribute("color");
 
 //	shaderProgram->addUniform("renderTexture");
-	shaderProgram->addUniform("MVP");
-
-	shaderProgram->use();
+	MainShader->addUniform("MVP");
 
 
 #pragma endregion SHADER_FUNCTIONS
@@ -172,11 +170,11 @@ int main(int argc, char *argv[])
 
 	// The following line tells the CPU program that "vertexData" stuff goes into "posision"
 	//parameter of the vertex shader.
-	glVertexAttribPointer(shaderProgram->attribute("position"),3,GL_FLOAT,GL_FALSE,0,0);
-	glEnableVertexAttribArray(shaderProgram->attribute("position"));
+	glVertexAttribPointer(MainShader->attribute("position"),3,GL_FLOAT,GL_FALSE,0,0);
+	glEnableVertexAttribArray(MainShader->attribute("position"));
 
-	glVertexAttribPointer(shaderProgram->attribute("color"), 4, GL_FLOAT, GL_FALSE,0,BUFFER_OFFSET(8*3*sizeof(GLfloat)));
-	glEnableVertexAttribArray(shaderProgram->attribute("color"));
+	glVertexAttribPointer(MainShader->attribute("color"), 4, GL_FLOAT, GL_FALSE,0,BUFFER_OFFSET(8*3*sizeof(GLfloat)));
+	glEnableVertexAttribArray(MainShader->attribute("color"));
 
 	glm::mat4 model; //define a transformation matrix for model in local coords
 	
@@ -266,26 +264,41 @@ int main(int argc, char *argv[])
 				break;
 			}
 		}
+		//Render to out custom FBO
+		glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+		glViewport(0, 0, 1024, 768); //set up viewport
 
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
+		MainShader->use();	//Use this shader to write to textures first
+
+#pragma region DATA_UPLOAD
+		/*Now add necessary data to the GPU so shader can use it accordingly*/
 		//following 2 lines define "intensity" of color, i.e ranging from 0 to highest
 		GLfloat time = SDL_GetTicks() ;
 		glUniform1f(uniColor, 1.0f);// (sin(time*0.01f) + 1.0f) / 2.0f);
 
 		model = glm::rotate(glm::mat4(1),time*0.005f, glm::vec3(0, 0, 1));	//calculate on the fly
 		MVP = proj*view*model;
-		glUniformMatrix4fv(shaderProgram->uniform("MVP"), 1, FALSE, glm::value_ptr(MVP));
-	
-//		suzanne->draw();
+		glUniformMatrix4fv(MainShader->uniform("MVP"), 1, FALSE, glm::value_ptr(MVP));
+
+#pragma endregion DATA_UPLOAD
+
 		glDrawElements(GL_TRIANGLES,size/sizeof(GLushort), GL_UNSIGNED_SHORT, 0);
+
+		//By now we have successfully rendered to our texture. Now we will draw on screen
+
+		glBindFramebuffer(GL_FRAMEBUFFER,0);
+		glViewport(0, 0, 1024, 768);
+
+
 		SDL_GL_SwapWindow(window);
 //		if (1000 / FPS > SDL_GetTicks() - start)
 //			SDL_Delay(1000 / FPS - (SDL_GetTicks() - start));
 	}
 	
-	shaderProgram->disable();
-	shaderProgram->~ShaderProgram();
+	MainShader->disable();
+	MainShader->~ShaderProgram();
 	SDL_GL_DeleteContext(context);
 	SDL_Quit();
 
