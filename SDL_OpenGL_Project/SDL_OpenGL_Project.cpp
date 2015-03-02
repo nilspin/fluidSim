@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
 	//=============================================================================================
 
 	ShaderProgram *shaderProgram = new ShaderProgram();
-	shaderProgram->initFromFiles("simple.vert", "simple.frag");
+	shaderProgram->initFromFiles("MainShader.vert", "MainShader.frag");
 
 	shaderProgram->addAttribute("position");
 	shaderProgram->addAttribute("color");
