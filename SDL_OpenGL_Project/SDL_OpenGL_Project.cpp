@@ -37,6 +37,9 @@ int main(int argc, char *argv[])
 	SDL_Window *window = SDL_CreateWindow("SDL_project", 200, 300, 1024,768, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE );
 	SDL_GLContext context = SDL_GL_CreateContext(window);
 
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
 	//Init GLEW
 	GLenum err = glewInit();
 	if (GLEW_OK != err)
@@ -115,10 +118,26 @@ int main(int argc, char *argv[])
 	glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1024, 768);//specify storage
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
+
+	//Depth buffer
+	GLuint depthTexture;
+	glGenTextures(1, &depthTexture);
+	glBindTexture(GL_TEXTURE_2D, depthTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, 1024, 768, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	
 	//set renderTexture as our color attachment#0
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderTexture, 0);
+	
+	//Depth texture alternative
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
+
 
 	//now set the list of draw buffers (here we just need 2- color and depth)
-	GLenum drawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+	GLenum drawBuffers[2] = { GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT };
 	glDrawBuffers(1, drawBuffers);//this is finally where we tell the driver to draw to this paricular framebuffer
 
 	//in case something goes wrong : 
@@ -146,7 +165,7 @@ int main(int argc, char *argv[])
 	shaderProgram->addAttribute("position");
 	shaderProgram->addAttribute("color");
 
-	shaderProgram->addUniform("renderTexture");
+//	shaderProgram->addUniform("renderTexture");
 	shaderProgram->addUniform("MVP");
 
 	shaderProgram->use();
@@ -259,7 +278,7 @@ int main(int argc, char *argv[])
 		GLfloat time = SDL_GetTicks() ;
 		glUniform1f(uniColor, 1.0f);// (sin(time*0.01f) + 1.0f) / 2.0f);
 
-		model = glm::rotate(glm::mat4(1),time*0.1f, glm::vec3(0, 0, 1));	//calculate on the fly
+		model = glm::rotate(glm::mat4(1),time*0.005f, glm::vec3(0, 0, 1));	//calculate on the fly
 		MVP = proj*view*model;
 		glUniformMatrix4fv(shaderProgram->uniform("MVP"), 1, FALSE, glm::value_ptr(MVP));
 	
