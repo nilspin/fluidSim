@@ -151,6 +151,17 @@ private:
 		}
 		else
 		{
+			GLint maxLength = 0;
+			glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &maxLength);
+
+			//The maxLength includes the NULL character
+			std::vector<GLchar> infoLog(maxLength);
+			glGetProgramInfoLog(programId, maxLength, &maxLength, &infoLog[0]);
+
+			std::cout << "Linker error : " << (char&)infoLog << std::endl;
+			//The program is useless now. So delete it.
+			glDeleteProgram(programId);
+
 			throw std::runtime_error("Shader program link failed: " + getInfoLog(ObjectType::PROGRAM, programId));
 		}
 
