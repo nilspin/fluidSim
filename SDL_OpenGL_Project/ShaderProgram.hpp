@@ -104,6 +104,16 @@ private:
 		glGetShaderiv(shaderId, GL_COMPILE_STATUS, &shaderStatus);
 		if (shaderStatus == GL_FALSE)
 		{
+			GLint maxLength = 0;
+			glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &maxLength);
+
+			// The maxLength includes the NULL character
+			GLchar* errorLog = (GLchar*)malloc(maxLength);
+			glGetShaderInfoLog(shaderId, maxLength, &maxLength, errorLog);
+			
+			std::cout << "Shader compile error : " << errorLog << std::endl;
+			free(errorLog);
+			glDeleteShader(shaderId); // Don't leak the shader.
 			throw std::runtime_error(shaderTypeString + " compilation failed: " + getInfoLog(ObjectType::SHADER, shaderId));
 		}
 		else
@@ -155,10 +165,10 @@ private:
 			glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &maxLength);
 
 			//The maxLength includes the NULL character
-			std::vector<GLchar> infoLog(maxLength);
-			glGetProgramInfoLog(programId, maxLength, &maxLength, &infoLog[0]);
-
-			std::cout << "Linker error : " << (char&)infoLog << std::endl;
+			GLchar *log = (GLchar *)malloc(maxLength);
+			glGetProgramInfoLog(programId, maxLength, 0, log); 
+			std::cout << "Linker error : " << log << std::endl;
+			free(log);
 			//The program is useless now. So delete it.
 			glDeleteProgram(programId);
 
