@@ -1,10 +1,8 @@
-//input vertex data
 layout(location=0) in vec3 quad_vertices;
-
-//interpolated output to frag shader
-out vec3 color;
+out vec3 pos;
 
 void main()
 {
-	color = vec3(quad_vertices);
+	pos = vec3(quad_vertices);
+	gl_Position = vec4(quad_vertices,1.0);
 }

@@ -166,12 +166,14 @@ int main(int argc, char *argv[])
 	quadProgram->addAttribute("quad_vertices");
 	quadProgram->addUniform("textureSampler");
 
+
 #pragma endregion SHADER_FUNCTIONS
 
 	/*Now specify the layout of the Vertex data */
 
 	// The following line tells the CPU program that "vertexData" stuff goes into "posision"
-	//parameter of the vertex shader.
+	//parameter of the vertex shader. It also tells us how data is spread within VBO.
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glVertexAttribPointer(MainShader->attribute("position"),3,GL_FLOAT,GL_FALSE,0,0);
 	glEnableVertexAttribArray(MainShader->attribute("position"));
 
@@ -268,7 +270,7 @@ int main(int argc, char *argv[])
 		}
 		//Render to out custom FBO
 		glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-		glViewport(0, 0, 1024, 768); //set up viewport
+//		glViewport(0, 0, 1024, 768); //set up viewport
 
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
@@ -278,7 +280,7 @@ int main(int argc, char *argv[])
 		/*Now add necessary data to the GPU so shader can use it accordingly*/
 		//following 2 lines define "intensity" of color, i.e ranging from 0 to highest
 		GLfloat time = SDL_GetTicks() ;
-		glUniform1f(uniColor, 1.0f);// (sin(time*0.01f) + 1.0f) / 2.0f);
+//		glUniform1f(uniColor, 1.0f);// (sin(time*0.01f) + 1.0f) / 2.0f);
 
 		model = glm::rotate(glm::mat4(1),time*0.005f, glm::vec3(0, 0, 1));	//calculate on the fly
 		MVP = proj*view*model;
@@ -290,7 +292,7 @@ int main(int argc, char *argv[])
 
 		//By now we have successfully rendered to our texture. We will now draw on screen
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
-		glViewport(0, 0, 1024, 768);
+//		glViewport(0, 0, 1024, 768);
 
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
@@ -306,7 +308,7 @@ int main(int argc, char *argv[])
 
 		//1st attribute : quad vertices
 		glEnableVertexAttribArray(0);	//note that this corresponds to the layout=0 in shader
-		glBindBuffer(GL_VERTEX_ARRAY,quad_vertexbuffer);
+		glBindBuffer(GL_ARRAY_BUFFER,quad_vertexbuffer);
 		glVertexAttribPointer(
 			0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
 			3,                  // size

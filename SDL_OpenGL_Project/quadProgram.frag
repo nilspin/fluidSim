@@ -1,8 +1,9 @@
 uniform sampler2D textureSampler;
-in vec3 color;	//interpolated variable from vert shader
-out vec3 Color;	//final output to screen
+
+out vec4 Color;
+in vec3 pos;
 
 void main()
 {
-	Color = texture(textureSampler, color);
+	Color = texture2D(textureSampler, pos.xy);//gl_FragCoord.xy) ;
 }
