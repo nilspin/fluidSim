@@ -5,5 +5,5 @@ in vec3 pos;
 
 void main()
 {
-	Color = texture2D(textureSampler, pos.xy);//gl_FragCoord.xy) ;
+	Color = texture2D(textureSampler, pos.xy);
 }
