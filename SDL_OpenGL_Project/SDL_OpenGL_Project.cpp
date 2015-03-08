@@ -14,12 +14,6 @@ GLuint VAO;
 GLuint VBO;
 GLuint positionAttribute, colAttrib, uniColor;
 
-void initGL()
-{
-	glClearColor(1.0f, 1.0f, 1.0f, 0.0f);
-	
-}
-
 int main(int argc, char *argv[])
 {
 	/* Don't use camera for now*/
@@ -116,6 +110,12 @@ int main(int argc, char *argv[])
 	//set renderTexture as our color attachment#0
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderTexture, 0);
 	
+	// The depth buffer
+	GLuint depthrenderbuffer;
+	glGenRenderbuffers(1, &depthrenderbuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1024, 768);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
 
 	//now set the list of draw buffers (here we just need 2- color and depth)
 	GLenum drawBuffers[1] = { GL_COLOR_ATTACHMENT0};
@@ -169,16 +169,6 @@ int main(int argc, char *argv[])
 
 #pragma endregion SHADER_FUNCTIONS
 
-	/*Now specify the layout of the Vertex data */
-
-	// The following line tells the CPU program that "vertexData" stuff goes into "posision"
-	//parameter of the vertex shader. It also tells us how data is spread within VBO.
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glVertexAttribPointer(MainShader->attribute("position"),3,GL_FLOAT,GL_FALSE,0,0);
-	glEnableVertexAttribArray(MainShader->attribute("position"));
-
-	glVertexAttribPointer(MainShader->attribute("color"), 4, GL_FLOAT, GL_FALSE,0,BUFFER_OFFSET(8*3*sizeof(GLfloat)));
-	glEnableVertexAttribArray(MainShader->attribute("color"));
 
 	glm::mat4 model; //define a transformation matrix for model in local coords
 	
@@ -195,7 +185,7 @@ int main(int argc, char *argv[])
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
 	int size;  glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
 
-	glEnable(GL_DEPTH_TEST); //wierd behavior happens if we don't do this
+	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glClearColor(0.4f, 0.4f, 0.4f, 1.0f);	//clear screen
 
@@ -271,7 +261,16 @@ int main(int argc, char *argv[])
 		//Render to out custom FBO
 		glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 //		glViewport(0, 0, 1024, 768); //set up viewport
+		/*Now specify the layout of the Vertex data */
 
+		// The following line tells the CPU program that "vertexData" stuff goes into "posision"
+		//parameter of the vertex shader. It also tells us how data is spread within VBO.
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glVertexAttribPointer(MainShader->attribute("position"), 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(MainShader->attribute("position"));
+
+		glVertexAttribPointer(MainShader->attribute("color"), 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(8 * 3 * sizeof(GLfloat)));
+		glEnableVertexAttribArray(MainShader->attribute("color"));
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
 		MainShader->use();	//Use this shader to write to textures first
@@ -292,7 +291,7 @@ int main(int argc, char *argv[])
 
 		//By now we have successfully rendered to our texture. We will now draw on screen
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
-//		glViewport(0, 0, 1024, 768);
+		glViewport(0, 0, 1024, 768);
 
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
