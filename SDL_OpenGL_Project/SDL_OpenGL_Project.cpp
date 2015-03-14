@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 	Uint32 start = NULL;
 	SDL_Init(SDL_INIT_EVERYTHING);
 
-	SDL_Window *window = SDL_CreateWindow("SDL_project", 200, 300, 1024,768, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE );
+	SDL_Window *window = SDL_CreateWindow("SDL_project", 100, 100, 1024,768, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE );
 	SDL_GLContext context = SDL_GL_CreateContext(window);
 
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
@@ -93,6 +93,15 @@ int main(int argc, char *argv[])
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
 
+
+	/*Another VBO (this one is for fluid)*/
+	GLfloat fluidwall[] = {
+	-1.0,-1.0,
+	-1.0, 1.0,
+	 1.0, 1.0,
+	 1.0,-1.0};
+	GLushort fluidIndices[] = {0,1,3,	2,3,1};
+
 #pragma region FBO_FUNCTIONS
 	GLuint FBO;
 	glGenFramebuffers(1,&FBO);
@@ -106,17 +115,27 @@ int main(int argc, char *argv[])
 	//filtering
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	
 	//set renderTexture as our color attachment#0
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderTexture, 0);
-	
-	// The depth buffer
-	GLuint depthrenderbuffer;
-	glGenRenderbuffers(1, &depthrenderbuffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
+///*
+	// The depth renderbuffer
+	GLuint depthbuffer;
+	glGenTextures(1, &depthbuffer);
+	glBindTexture(GL_TEXTURE_2D, depthbuffer);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 768, 0, GL_DEPTH_COMPONENT,GL_UNSIGNED_BYTE, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthbuffer, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+//*/
+/*	GLuint depthrenderBuffer;
+	glGenRenderbuffers(1, &depthrenderBuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, depthrenderBuffer);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1024, 768);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
-
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderBuffer);
+*/
 	//now set the list of draw buffers (here we just need 2- color and depth)
 	GLenum drawBuffers[1] = { GL_COLOR_ATTACHMENT0};
 	glDrawBuffers(1, drawBuffers);//this is finally where we tell the driver to draw to this paricular framebuffer
@@ -165,7 +184,6 @@ int main(int argc, char *argv[])
 	quadProgram->initFromFiles("quadProgram.vert","quadProgram.frag");
 	quadProgram->addAttribute("quad_vertices");
 	quadProgram->addUniform("textureSampler");
-
 
 #pragma endregion SHADER_FUNCTIONS
 
@@ -260,6 +278,8 @@ int main(int argc, char *argv[])
 		}
 		//Render to out custom FBO
 		glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+//		glDrawBuffer(GL_NONE);
+//		glReadBuffer(GL_NONE);
 //		glViewport(0, 0, 1024, 768); //set up viewport
 		/*Now specify the layout of the Vertex data */
 
@@ -271,6 +291,7 @@ int main(int argc, char *argv[])
 
 		glVertexAttribPointer(MainShader->attribute("color"), 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(8 * 3 * sizeof(GLfloat)));
 		glEnableVertexAttribArray(MainShader->attribute("color"));
+
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
 		MainShader->use();	//Use this shader to write to textures first
@@ -300,7 +321,7 @@ int main(int argc, char *argv[])
 
 		//Bind out texture in texture unit #0
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, renderTexture);
+		glBindTexture(GL_TEXTURE_2D, depthbuffer);
 
 		//set our 'textureSampler' sampler to use texture unit 0
 		glUniform1i(quadProgram->uniform("textureSampler"),0);
