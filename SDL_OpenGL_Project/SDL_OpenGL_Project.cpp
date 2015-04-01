@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
 	ShaderProgram *MainShader = new ShaderProgram();
 	MainShader->initFromFiles("MainShader.vert", "MainShader.frag");
 	MainShader->addAttribute("position");
-//	MainShader->addAttribute("color");
+	MainShader->addUniform("mousePos");
 //	MainShader->addUniform("MVP");
 
 	//another shader to sample from texture and draw on quadVBO
@@ -212,19 +212,22 @@ int main(int argc, char *argv[])
 		//Render to out custom FBO
 		glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
+		MainShader->use();	//Use this shader to write to textures first
+
 		// The following line tells the CPU program that "vertexData" stuff goes into "posision"
 		//parameter of the vertex shader. It also tells us how data is spread within VBO.
 		glBindBuffer(GL_ARRAY_BUFFER, fluid);
 		glVertexAttribPointer(MainShader->attribute("position"), 2, GL_FLOAT, GL_FALSE, 0, 0);
 		glEnableVertexAttribArray(MainShader->attribute("position"));
 
+		glUniform2f(MainShader->uniform("mousePos"), (int)e.motion.x, (int)e.motion.y);
+
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
-		MainShader->use();	//Use this shader to write to textures first
 
 		//1st draw call
 		glDrawArrays(GL_TRIANGLES, 0, 6);
-
+//--------------------------------------------------------------------------------------
 		//By now we have successfully rendered to our texture. We will now draw on screen
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
 		glViewport(0, 0, 1024, 768);
