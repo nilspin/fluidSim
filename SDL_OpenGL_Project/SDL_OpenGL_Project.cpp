@@ -41,8 +41,27 @@ int main(int argc, char *argv[])
 		cout << "Sorry, but GLEW failed to load.";
 		return 1;
 	}
-
+	SDL_Event e;
 #pragma endregion SDL_FUNCTIONS;
+
+
+#pragma region SHADER_FUNCTIONS
+
+	//=============================================================================================
+	//Shader that contains main logic
+	ShaderProgram *MainShader = new ShaderProgram();
+	MainShader->initFromFiles("MainShader.vert", "MainShader.frag");
+	MainShader->addAttribute("position");
+	MainShader->addUniform("mousePos");
+	//	MainShader->addUniform("MVP");
+
+	//another shader to sample from texture and draw on quadVBO
+	ShaderProgram *quadProgram = new ShaderProgram();
+	quadProgram->initFromFiles("quadProgram.vert", "quadProgram.frag");
+	quadProgram->addAttribute("quad_vertices");
+	quadProgram->addUniform("textureSampler");
+
+#pragma endregion SHADER_FUNCTIONS
 
 	//Create Vertex Array Object
 	glGenVertexArrays(1, &VAO);
@@ -61,8 +80,12 @@ int main(int argc, char *argv[])
 	GLuint fluid;//VBO for fluid wall
 	glGenBuffers(1, &fluid);
 	glBindBuffer(GL_ARRAY_BUFFER, fluid);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(fluidwall), &fluidwall, GL_STATIC_DRAW);
-	
+	glBufferData(GL_ARRAY_BUFFER, sizeof(fluidwall), &fluidwall, GL_STATIC_DRAW);	
+	//Assign attribs
+	glVertexAttribPointer(MainShader->attribute("position"), 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(MainShader->attribute("position"));
+	glBindVertexArray(0);
+
 #pragma region FBO_FUNCTIONS
 	GLuint FBO;
 	glGenFramebuffers(1,&FBO);
@@ -117,31 +140,11 @@ int main(int argc, char *argv[])
 
 #pragma endregion FBO_FUNCTIONS	
 
-#pragma region SHADER_FUNCTIONS
-
-	//=============================================================================================
-	//Shader that contains main logic
-	ShaderProgram *MainShader = new ShaderProgram();
-	MainShader->initFromFiles("MainShader.vert", "MainShader.frag");
-	MainShader->addAttribute("position");
-	MainShader->addUniform("mousePos");
-//	MainShader->addUniform("MVP");
-
-	//another shader to sample from texture and draw on quadVBO
-	ShaderProgram *quadProgram = new ShaderProgram();
-	quadProgram->initFromFiles("quadProgram.vert","quadProgram.frag");
-	quadProgram->addAttribute("quad_vertices");
-	quadProgram->addUniform("textureSampler");
-
-#pragma endregion SHADER_FUNCTIONS
-
-
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glClearColor(0.4f, 0.4f, 0.4f, 1.0f);	//clear screen
 
 	//here comes event handling part
-	SDL_Event e;
 	bool quit = false;
 	
 	while (!quit)
@@ -216,17 +219,15 @@ int main(int argc, char *argv[])
 
 		// The following line tells the CPU program that "vertexData" stuff goes into "posision"
 		//parameter of the vertex shader. It also tells us how data is spread within VBO.
-		glBindBuffer(GL_ARRAY_BUFFER, fluid);
-		glVertexAttribPointer(MainShader->attribute("position"), 2, GL_FLOAT, GL_FALSE, 0, 0);
-		glEnableVertexAttribArray(MainShader->attribute("position"));
-
-		glUniform2f(MainShader->uniform("mousePos"), (int)e.motion.x, (int)e.motion.y);
+		glBindVertexArray(VAO);
 
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-
+		//we need to do the following because unfortunately uniforms cannot be bound to VAOs
+		glUniform2f(MainShader->uniform("mousePos"), (int)e.motion.x, (int)e.motion.y);
 
 		//1st draw call
 		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);//unbind VAO
 //--------------------------------------------------------------------------------------
 		//By now we have successfully rendered to our texture. We will now draw on screen
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
