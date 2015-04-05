@@ -10,20 +10,13 @@ using namespace std;
 
 #define BUFFER_OFFSET(i) ((char*)NULL + (i))
 
-GLuint All_screen;
+GLuint All_screen, All_screenVBO;
 GLuint boundary,boundaryVBO,boundaryIndexVBO;
-GLuint VBO;
+GLuint inside, insideVBO, insideIndexVBO;
 GLuint positionAttribute, colAttrib, uniColor;
 
 int main(int argc, char *argv[])
 {
-	/* Don't use camera for now*/
-	Camera cam;
-	cam.SetMode(FREE);
-	cam.SetPosition(glm::vec3(0, 0, -10));
-	cam.SetLookAt(glm::vec3(0, 0, 0));
-	cam.SetClipping(.01, 50);
-	cam.SetFOV(45);
 	int width = 640;
 	int height = 480;
 #pragma region SDL_FUNCTIONS;
@@ -63,11 +56,12 @@ int main(int argc, char *argv[])
 	quadProgram->addAttribute("quad_vertices");
 	quadProgram->addUniform("textureSampler");
 
+
 #pragma endregion SHADER_FUNCTIONS
 
 	//Create Vertex Array Object
-	glGenVertexArrays(1, &All_screen);
-	glBindVertexArray(All_screen);
+	glGenVertexArrays(1, &inside);
+	glBindVertexArray(inside);
 
 	float px = 1.0 / width; px = 150 * px;
 	float py = 1.0 / height;  py = 150 * py;
@@ -297,32 +291,26 @@ int main(int argc, char *argv[])
 					break;
 
 				case SDLK_w:
-					cam.Move(FORWARD);
 					std::cout << "W pressed \n";
 					break;
 
 				case SDLK_s:
-					cam.Move(BACK);
 					std::cout << "S pressed \n";
 					break;
 
 				case SDLK_a:
-					cam.Move(LEFT);
 					std::cout << "A pressed \n";
 					break;
 
 				case SDLK_d:
-					cam.Move(RIGHT);
 					std::cout << "D pressed \n";
 					break;
 
 				case SDLK_q:
-					cam.Move(DOWN);
 					std::cout << "Q pressed \n";
 					break;
 
 				case SDLK_e:
-					cam.Move(UP);
 					std::cout << "E pressed \n";
 					break;
 
@@ -331,17 +319,9 @@ int main(int argc, char *argv[])
 
 			case SDL_MOUSEMOTION:
 				
-				cam.Move2D(e.motion.x,e.motion.y);
 				std::cout << "mouse moved by x=" << e.motion.x << " y=" << e.motion.y << "\n";
 				break;
 
-			case SDL_MOUSEBUTTONDOWN:
-				cam.SetPos(e.button.button, e.button.state, e.button.x, e.button.y);
-				break;
-
-			case SDL_MOUSEBUTTONUP:
-				cam.SetPos(e.button.button, e.button.state, e.button.x, e.button.y);
-				break;
 			}
 		}
 		//Render to out custom FBO
