@@ -10,7 +10,8 @@ using namespace std;
 
 #define BUFFER_OFFSET(i) ((char*)NULL + (i))
 
-GLuint VAO;
+GLuint All_screen;
+GLuint boundary,boundaryVBO,boundaryIndexVBO;
 GLuint VBO;
 GLuint positionAttribute, colAttrib, uniColor;
 
@@ -23,12 +24,13 @@ int main(int argc, char *argv[])
 	cam.SetLookAt(glm::vec3(0, 0, 0));
 	cam.SetClipping(.01, 50);
 	cam.SetFOV(45);
-
+	int width = 640;
+	int height = 480;
 #pragma region SDL_FUNCTIONS;
 	Uint32 start = NULL;
 	SDL_Init(SDL_INIT_EVERYTHING);
 
-	SDL_Window *window = SDL_CreateWindow("SDL_project", 100, 100, 1024,768, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE );
+	SDL_Window *window = SDL_CreateWindow("SDL_project", 100, 100, width,height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE );
 	SDL_GLContext context = SDL_GL_CreateContext(window);
 
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
@@ -64,17 +66,21 @@ int main(int argc, char *argv[])
 #pragma endregion SHADER_FUNCTIONS
 
 	//Create Vertex Array Object
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
+	glGenVertexArrays(1, &All_screen);
+	glBindVertexArray(All_screen);
 
+	float px = 1.0 / width; px = 150 * px;
+	float py = 1.0 / height;  py = 150 * py;
+	float x = 1 - px;
+	float y = 1 - py;
 	/*Another VBO (this one is for fluid)*/
 	GLfloat fluidwall[] = {		//DATA
-	-1.0,-1.0,
-	-1.0, 1.0,
-	 1.0,-1.0,
-	 1.0,-1.0,
-	 1.0, 1.0,
-	-1.0, 1.0
+	-x,-y,
+	-x, y,
+	 x,-y,
+	 x,-y,
+	 x, y,
+	-x, y
 	};	//Don't need index data for this peasant mesh!
 	
 	GLuint fluid;//VBO for fluid wall
@@ -84,7 +90,83 @@ int main(int argc, char *argv[])
 	//Assign attribs
 	glVertexAttribPointer(MainShader->attribute("position"), 2, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(MainShader->attribute("position"));
-	glBindVertexArray(0);
+	glBindVertexArray(0);	//unbind VAO
+
+	//Another VAO for boundary
+	glGenVertexArrays(1, &boundary);
+	glBindVertexArray(boundary);
+	float boundaryWall[] = {
+/*		-1,1,
+		1,1,
+		1,-1,
+		-1,-1
+		-1,1-py,
+		-1,py-1,
+		px-1,1,
+		1-px,1,
+		1,1-py,
+		1,py-1,
+		1-px,-1,
+		px-1,-1
+*/
+		//left
+		-1,1,
+		px-1,1,
+		-1,-1,
+		px-1,1,
+		px-1,-1,
+		-1,-1,
+		//bottom
+		-1,py-1,
+		-1,-1,
+		1,-1,
+		-1,py-1,
+		1,py-1,
+		1,-1,
+		//right
+		1-px,1,
+		1,1,
+		1-px,-1,
+		1,1,
+		1-px,-1,
+		1,-1,
+		//up
+		-1,1,
+		1,1,
+		-1,1-py,
+		1,1,
+		1,1-py,
+		-1,1-py
+	};
+	GLuint boundaryVBO;//VBO for fluid wall
+	glGenBuffers(1, &boundaryVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, boundaryVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(boundaryWall), &boundaryWall, GL_STATIC_DRAW);
+
+	/*indexVBO
+	GLushort indices[] = {
+		//left
+		0,6,3,
+		6,11,3,
+		//bottom
+		5,3,2,
+		5,9,2,
+		//right
+		7,1,10,
+		1,10,2,
+		//up
+		0,1,4,
+		1,8,4
+	};
+	glGenBuffers(1, &boundaryIndexVBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, boundaryIndexVBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), &indices, GL_STATIC_DRAW);
+	*/
+
+	//Assign attribs
+	glVertexAttribPointer(MainShader->attribute("position"), 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(MainShader->attribute("position"));
+	glBindVertexArray(0);	//unbind VAO
 
 #pragma region FBO_FUNCTIONS
 	GLuint FBO;
@@ -95,7 +177,7 @@ int main(int argc, char *argv[])
 	GLuint renderTexture;
 	glGenTextures(1, &renderTexture);
 	glBindTexture(GL_TEXTURE_2D, renderTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1024, 768, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 	//filtering
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -113,6 +195,56 @@ int main(int argc, char *argv[])
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthbuffer, 0);
 	//glDrawBuffer(GL_NONE);
 	//glReadBuffer(GL_NONE);
+
+	GLuint Velocity0;
+	glGenTextures(1, &Velocity0);
+	glBindTexture(GL_TEXTURE_2D, Velocity0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, 768, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	//filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//set renderTexture as our color attachment#0
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, Velocity0, 0);
+
+	GLuint Velocity1;
+	glGenTextures(1, &Velocity1);
+	glBindTexture(GL_TEXTURE_2D, Velocity1);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, 768, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	//filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//set renderTexture as our color attachment#1
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, Velocity1, 0);
+
+	GLuint Pressure0;
+	glGenTextures(1, &Pressure0);
+	glBindTexture(GL_TEXTURE_2D, Pressure0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, 768, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	//filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//set renderTexture as our color attachment#0
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, Pressure0, 0);
+
+	GLuint Pressure1;
+	glGenTextures(1, &Pressure1);
+	glBindTexture(GL_TEXTURE_2D, Pressure1);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, 768, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	//filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//set renderTexture as our color attachment#0
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, Pressure1, 0);
+
+	GLuint divergence;
+	glGenTextures(1, &divergence);
+	glBindTexture(GL_TEXTURE_2D, divergence);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, 768, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	//filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//set renderTexture as our color attachment#0
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, divergence, 0);
 
 	//now set the list of draw buffers (here we just need 2- color and depth)
 	GLenum drawBuffers[1] = { GL_COLOR_ATTACHMENT0};
@@ -219,19 +351,19 @@ int main(int argc, char *argv[])
 
 		// The following line tells the CPU program that "vertexData" stuff goes into "posision"
 		//parameter of the vertex shader. It also tells us how data is spread within VBO.
-		glBindVertexArray(VAO);
+		glBindVertexArray(boundary);
 
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 		//we need to do the following because unfortunately uniforms cannot be bound to VAOs
 		glUniform2f(MainShader->uniform("mousePos"), (int)e.motion.x, (int)e.motion.y);
 
 		//1st draw call
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDrawArrays(GL_TRIANGLES,0,24);
 		glBindVertexArray(0);//unbind VAO
 //--------------------------------------------------------------------------------------
 		//By now we have successfully rendered to our texture. We will now draw on screen
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
-		glViewport(0, 0, 1024, 768);
+//		glViewport(0, 0, width, 768);
 
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
