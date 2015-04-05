@@ -59,6 +59,7 @@ int main(int argc, char *argv[])
 
 #pragma endregion SHADER_FUNCTIONS
 
+#pragma region MESH_DATA
 	//Create Vertex Array Object
 	glGenVertexArrays(1, &inside);
 	glBindVertexArray(inside);
@@ -161,6 +162,8 @@ int main(int argc, char *argv[])
 	glVertexAttribPointer(MainShader->attribute("position"), 2, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(MainShader->attribute("position"));
 	glBindVertexArray(0);	//unbind VAO
+
+#pragma endregion MESH_DATA
 
 #pragma region FBO_FUNCTIONS
 	GLuint FBO;
@@ -270,11 +273,13 @@ int main(int argc, char *argv[])
 	glEnable(GL_BLEND);
 	glClearColor(0.4f, 0.4f, 0.4f, 1.0f);	//clear screen
 
-	//here comes event handling part
+	//here comes main gameloop
 	bool quit = false;
 	
 	while (!quit)
 	{
+#pragma region EVENT_HANDLING
+
 		while (SDL_PollEvent(&e) != 0)
 		{
 			switch (e.type)
@@ -324,6 +329,8 @@ int main(int argc, char *argv[])
 
 			}
 		}
+#pragma endregion EVENT_HANDLING
+
 		//Render to out custom FBO
 		glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
