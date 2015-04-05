@@ -13,7 +13,6 @@ using namespace std;
 GLuint All_screen, All_screenVBO;
 GLuint boundary,boundaryVBO,boundaryIndexVBO;
 GLuint inside, insideVBO, insideIndexVBO;
-GLuint positionAttribute, colAttrib, uniColor;
 
 int main(int argc, char *argv[])
 {
@@ -60,6 +59,29 @@ int main(int argc, char *argv[])
 #pragma endregion SHADER_FUNCTIONS
 
 #pragma region MESH_DATA
+
+	//Create Vertex Array Object
+	glGenVertexArrays(1, &All_screen);
+	glBindVertexArray(All_screen);
+
+	GLfloat canvas[] = {		//DATA
+		-1,-1,
+		-1,1,
+		1,-1,
+		1,-1,
+		1,1,
+		-1,1
+	};	//Don't need index data for this peasant mesh!
+
+	GLuint All_screenVBO;//VBO for fluid wall
+	glGenBuffers(1, &All_screenVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, All_screenVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(canvas), &canvas, GL_STATIC_DRAW);
+	//Assign attribs
+	glVertexAttribPointer(MainShader->attribute("position"), 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(MainShader->attribute("position"));
+	glBindVertexArray(0);	//unbind VAO
+
 	//Create Vertex Array Object
 	glGenVertexArrays(1, &inside);
 	glBindVertexArray(inside);
@@ -338,7 +360,7 @@ int main(int argc, char *argv[])
 
 		// The following line tells the CPU program that "vertexData" stuff goes into "posision"
 		//parameter of the vertex shader. It also tells us how data is spread within VBO.
-		glBindVertexArray(boundary);
+		glBindVertexArray(All_screen);
 
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 		//we need to do the following because unfortunately uniforms cannot be bound to VAOs
