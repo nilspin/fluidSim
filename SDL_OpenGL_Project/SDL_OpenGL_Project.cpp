@@ -13,6 +13,7 @@ using namespace std;
 GLuint All_screen, All_screenVBO;
 GLuint boundary,boundaryVBO,boundaryIndexVBO;
 GLuint inside, insideVBO, insideIndexVBO;
+bool quit = false;
 
 int main(int argc, char *argv[])
 {
@@ -36,8 +37,8 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 	SDL_Event e;
+	glClearColor(0.4f, 0.4f, 0.4f, 1.0f);	//clear screen
 #pragma endregion SDL_FUNCTIONS;
-
 
 #pragma region SHADER_FUNCTIONS
 
@@ -290,13 +291,6 @@ int main(int argc, char *argv[])
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);//this is default : draw to screen
 
 #pragma endregion FBO_FUNCTIONS	
-
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_BLEND);
-	glClearColor(0.4f, 0.4f, 0.4f, 1.0f);	//clear screen
-
-	//here comes main gameloop
-	bool quit = false;
 	
 	while (!quit)
 	{
@@ -353,13 +347,14 @@ int main(int argc, char *argv[])
 		}
 #pragma endregion EVENT_HANDLING
 
+#pragma region RTT_MAIN
 		//Render to out custom FBO
 		glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
 		MainShader->use();	//Use this shader to write to textures first
 
-		// The following line tells the CPU program that "vertexData" stuff goes into "posision"
-		//parameter of the vertex shader. It also tells us how data is spread within VBO.
+		/* The following line tells the CPU program that "vertexData" stuff goes into "posision"
+		parameter of the vertex shader. It also tells us how data is spread within VBO. */
 		glBindVertexArray(All_screen);
 
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
@@ -369,6 +364,10 @@ int main(int argc, char *argv[])
 		//1st draw call
 		glDrawArrays(GL_TRIANGLES,0,24);
 		glBindVertexArray(0);//unbind VAO
+
+#pragma endregion RTT_MAIN
+
+#pragma region DRAW_TO_SCREEN
 //--------------------------------------------------------------------------------------
 		//By now we have successfully rendered to our texture. We will now draw on screen
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
@@ -401,7 +400,8 @@ int main(int argc, char *argv[])
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glDisableVertexAttribArray(0);
 
-		//swap buffers
+#pragma endregion DRAW_TO_SCREEN
+	
 		SDL_GL_SwapWindow(window);
 //		if (1000 / FPS > SDL_GetTicks() - start)
 //			SDL_Delay(1000 / FPS - (SDL_GetTicks() - start));
