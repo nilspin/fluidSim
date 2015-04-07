@@ -56,6 +56,11 @@ int main(int argc, char *argv[])
 	quadProgram->addAttribute("quad_vertices");
 	quadProgram->addUniform("textureSampler");
 
+	//advect velocity
+	ShaderProgram *advectVelocity = new ShaderProgram();
+	advectVelocity->initFromFiles("MainShader.vert", "advectVelocity.frag");
+	advectVelocity->addAttribute("position");
+	advectVelocity->addUniform("velocity0");
 
 #pragma endregion SHADER_FUNCTIONS
 
@@ -189,9 +194,9 @@ int main(int argc, char *argv[])
 #pragma endregion MESH_DATA
 
 #pragma region FBO_FUNCTIONS
-	GLuint FBO;
-	glGenFramebuffers(1,&FBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+	GLuint MainFBO;
+	glGenFramebuffers(1,&MainFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, MainFBO);
 
 	//now create a texture
 	GLuint renderTexture;
@@ -202,7 +207,7 @@ int main(int argc, char *argv[])
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	//set renderTexture as our color attachment#0
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderTexture, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, renderTexture, 0);
 ///*
 	// The depth renderbuffer
 	GLuint depthbuffer;
@@ -211,7 +216,7 @@ int main(int argc, char *argv[])
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 768, 0, GL_DEPTH_COMPONENT,GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT,GL_UNSIGNED_BYTE, 0);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthbuffer, 0);
 	//glDrawBuffer(GL_NONE);
 	//glReadBuffer(GL_NONE);
@@ -219,62 +224,74 @@ int main(int argc, char *argv[])
 	GLuint Velocity0;
 	glGenTextures(1, &Velocity0);
 	glBindTexture(GL_TEXTURE_2D, Velocity0);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, 768, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 	//filtering
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	//set renderTexture as our color attachment#0
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, Velocity0, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, Velocity0, 0);
 
 	GLuint Velocity1;
 	glGenTextures(1, &Velocity1);
 	glBindTexture(GL_TEXTURE_2D, Velocity1);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, 768, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 	//filtering
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	//set renderTexture as our color attachment#1
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, Velocity1, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, Velocity1, 0);
 
 	GLuint Pressure0;
 	glGenTextures(1, &Pressure0);
 	glBindTexture(GL_TEXTURE_2D, Pressure0);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, 768, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 	//filtering
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	//set renderTexture as our color attachment#0
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, Pressure0, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, Pressure0, 0);
 
 	GLuint Pressure1;
 	glGenTextures(1, &Pressure1);
 	glBindTexture(GL_TEXTURE_2D, Pressure1);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, 768, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 	//filtering
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	//set renderTexture as our color attachment#0
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, Pressure1, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, Pressure1, 0);
 
 	GLuint divergence;
 	glGenTextures(1, &divergence);
 	glBindTexture(GL_TEXTURE_2D, divergence);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, 768, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 	//filtering
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	//set renderTexture as our color attachment#0
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, divergence, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, divergence, 0);
 
 	//now set the list of draw buffers (here we just need 2- color and depth)
-	GLenum drawBuffers[1] = { GL_COLOR_ATTACHMENT0};
-	glDrawBuffers(1, drawBuffers);//this is finally where we tell the driver to draw to this paricular framebuffer
+	GLenum drawBuffers[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
+	glDrawBuffers(2, drawBuffers);//this is finally where we tell the driver to draw to this paricular framebuffer
 
 	//in case something goes wrong : 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		return false;
+	glBindFramebuffer(GL_FRAMEBUFFER,0);
 
-	// The fullscreen quad's FBO
+	//AdvectVelocity1 FBO
+	GLuint vel1AdvectFBO;
+	glGenFramebuffers(1, &vel1AdvectFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, vel1AdvectFBO);
+	GLenum vel1DrawBuff = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, &vel1DrawBuff);
+
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, Velocity1, 0);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		return false;
+
+	// The fullscreen quad's VBO
 	static const GLfloat g_quad_vertex_buffer_data[] = {
 		-1.0f, -1.0f, 0.0f,
 		1.0f, -1.0f, 0.0f,
@@ -348,14 +365,14 @@ int main(int argc, char *argv[])
 #pragma endregion EVENT_HANDLING
 
 #pragma region RTT_MAIN
-		//Render to out custom FBO
-		glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+		//Render to out custom MainFBO
+		glBindFramebuffer(GL_FRAMEBUFFER, MainFBO);
 
-		MainShader->use();	//Use this shader to write to textures first
+		advectVelocity->use();	//Use this shader to write to textures first
 
 		/* The following line tells the CPU program that "vertexData" stuff goes into "posision"
 		parameter of the vertex shader. It also tells us how data is spread within VBO. */
-		glBindVertexArray(All_screen);
+		glBindVertexArray(inside);
 
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 		//we need to do the following because unfortunately uniforms cannot be bound to VAOs
@@ -380,7 +397,7 @@ int main(int argc, char *argv[])
 
 		//Bind out texture in texture unit #0
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, renderTexture);//depthbuffer
+		glBindTexture(GL_TEXTURE_2D, Velocity0);//depthbuffer
 
 		//set our 'textureSampler' sampler to use texture unit 0
 		glUniform1i(quadProgram->uniform("textureSampler"),0);
