@@ -56,11 +56,50 @@ int main(int argc, char *argv[])
 	quadProgram->addAttribute("quad_vertices");
 	quadProgram->addUniform("textureSampler");
 
-	//advect velocity
+	//advect velocity--1
 	ShaderProgram *advectVelocity = new ShaderProgram();
 	advectVelocity->initFromFiles("MainShader.vert", "advectVelocity.frag");
 	advectVelocity->addAttribute("position");
 	advectVelocity->addUniform("velocity0");
+
+	//advect velocity boundary--2
+	ShaderProgram *velocityBoundary = new ShaderProgram();
+	velocityBoundary->initFromFiles("MainShader.vert", "velocityBoundary.frag");
+	velocityBoundary->addAttribute("position");
+
+	//add force--3
+	ShaderProgram *addForce = new ShaderProgram();
+	addForce->initFromFiles("MainShader.vert","addForce.frag");
+	addForce->addAttribute("position");
+	addForce->addUniform("mousePos");
+
+	//divergence shader--4
+	ShaderProgram *divergenceShader = new ShaderProgram();
+	divergenceShader->initFromFiles("MainShader.vert","divergence.frag");
+	divergenceShader->addAttribute("position");
+	divergenceShader->addUniform("velocity1");
+
+	//jacobi solver shader --5
+	ShaderProgram *jacobiSolver = new ShaderProgram();
+	jacobiSolver->initFromFiles("MainShader.vert", "jacobiSolver.frag");
+	jacobiSolver->addAttribute("position");
+	jacobiSolver->addUniform("pressure0");
+	jacobiSolver->addUniform("divergence");
+
+	//pressure boundary shader --6 this is same as #5 but it acts on boundary only
+	ShaderProgram *pressureBoundary = new ShaderProgram();
+	pressureBoundary->initFromFiles("MainShader.vert", "jacobiSolver.frag");
+	pressureBoundary->addAttribute("position");
+	pressureBoundary->addUniform("pressure0");
+	pressureBoundary->addUniform("divergence");
+
+	//subtract pressure gradient --7
+	ShaderProgram *subtractPressureGradient = new ShaderProgram();
+	subtractPressureGradient->initFromFiles("MainShader.vert","subtractPressureGradient.frag");
+	subtractPressureGradient->addAttribute("position");
+	subtractPressureGradient->addUniform("pressure0");
+	subtractPressureGradient->addUniform("velocity1");
+
 
 #pragma endregion SHADER_FUNCTIONS
 
@@ -272,15 +311,15 @@ int main(int argc, char *argv[])
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, divergence, 0);
 
 	//now set the list of draw buffers (here we just need 2- color and depth)
-	GLenum drawBuffers[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
-	glDrawBuffers(2, drawBuffers);//this is finally where we tell the driver to draw to this paricular framebuffer
+	GLenum drawBuffers[5] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3,GL_COLOR_ATTACHMENT4};
+	glDrawBuffers(5, drawBuffers);//this is finally where we tell the driver to draw to this paricular framebuffer
 
 	//in case something goes wrong : 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		return false;
 	glBindFramebuffer(GL_FRAMEBUFFER,0);
 
-	//AdvectVelocity1 FBO
+	//AdvectVelocity1 FBO  : this FBO will be bound for first 3 stages
 	GLuint vel1AdvectFBO;
 	glGenFramebuffers(1, &vel1AdvectFBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, vel1AdvectFBO);
@@ -291,6 +330,7 @@ int main(int argc, char *argv[])
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		return false;
 
+	//advectVelocityBoundary FBO
 	// The fullscreen quad's VBO
 	static const GLfloat g_quad_vertex_buffer_data[] = {
 		-1.0f, -1.0f, 0.0f,
@@ -368,11 +408,11 @@ int main(int argc, char *argv[])
 		//Render to out custom MainFBO
 		glBindFramebuffer(GL_FRAMEBUFFER, MainFBO);
 
-		advectVelocity->use();	//Use this shader to write to textures first
+		MainShader->use();	//Use this shader to write to textures first
 
 		/* The following line tells the CPU program that "vertexData" stuff goes into "posision"
 		parameter of the vertex shader. It also tells us how data is spread within VBO. */
-		glBindVertexArray(inside);
+		glBindVertexArray(All_screen);
 
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 		//we need to do the following because unfortunately uniforms cannot be bound to VAOs
@@ -433,4 +473,3 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
-
