@@ -1,6 +1,6 @@
 in vec2 pos;
 uniform vec2 mousePos;
-layout(location=0) out vec4 velocity1;
+layout(location=1) out vec4 velocity1;
 
 void main()
 {

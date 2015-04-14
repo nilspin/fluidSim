@@ -451,6 +451,19 @@ int main(int argc, char *argv[])
 		glDrawArrays(GL_TRIANGLES,0,3);
 		glBindVertexArray(0);//unbind VAO
 
+		//stage 2
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		addForce->use();
+		glBindVertexArray(All_screen);
+		//we need to do the following because unfortunately uniforms cannot be bound to VAOs
+		glUniform2f(addForce->uniform("mousePos"), (int)e.motion.x, (int)e.motion.y);
+		
+		//2nd draw call
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
+
+
 #pragma endregion RTT_MAIN
 
 #pragma region DRAW_TO_SCREEN
@@ -466,7 +479,7 @@ int main(int argc, char *argv[])
 
 		//Bind out texture in texture unit #0
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, Velocity0);//depthbuffer
+		glBindTexture(GL_TEXTURE_2D, Velocity1);
 
 		//set our 'textureSampler' sampler to use texture unit 0
 		glUniform1i(quadProgram->uniform("textureSampler"),0);
