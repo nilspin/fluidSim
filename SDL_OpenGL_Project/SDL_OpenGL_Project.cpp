@@ -319,18 +319,48 @@ int main(int argc, char *argv[])
 		return false;
 	glBindFramebuffer(GL_FRAMEBUFFER,0);
 
-	//AdvectVelocity1 FBO  : this FBO will be bound for first 3 stages
-	GLuint vel1AdvectFBO;
-	glGenFramebuffers(1, &vel1AdvectFBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, vel1AdvectFBO);
-	GLenum vel1DrawBuff = { GL_COLOR_ATTACHMENT0 };
-	glDrawBuffers(1, &vel1DrawBuff);
+	//Jacobi_iter_FBO_1  : this FBO will be bound for stages 5 and 6
+	GLuint Jacobi_iter_FBO_1;
+	glGenFramebuffers(1, &Jacobi_iter_FBO_1);
+	glBindFramebuffer(GL_FRAMEBUFFER, Jacobi_iter_FBO_1);
 
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, Velocity1, 0);
+	glBindTexture(GL_TEXTURE_2D, divergence);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, divergence, 0);
+
+	glBindTexture(GL_TEXTURE_2D, Pressure0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, Pressure0, 0);
+
+	glBindTexture(GL_TEXTURE_2D, Pressure1);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, Pressure1, 0);
+
+	GLenum Jacobi_iter_1[3] = { GL_COLOR_ATTACHMENT0 , GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
+	glDrawBuffers(3, Jacobi_iter_1);
+
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		return false;
 
-	//advectVelocityBoundary FBO
+	//Jacobi_iter_FBO_2  : this FBO will be bound for stages 5 and 6
+	GLuint Jacobi_iter_FBO_2;
+	glGenFramebuffers(1, &Jacobi_iter_FBO_2);
+	glBindFramebuffer(GL_FRAMEBUFFER, Jacobi_iter_FBO_2);
+
+	glBindTexture(GL_TEXTURE_2D, divergence);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, divergence, 0);
+
+	glBindTexture(GL_TEXTURE_2D, Pressure1);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, Pressure1, 0);
+
+	glBindTexture(GL_TEXTURE_2D, Pressure0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, Pressure0, 0);
+
+	GLenum Jacobi_iter_2[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	glDrawBuffers(3, Jacobi_iter_2);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		return false;
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	// The fullscreen quad's VBO
 	static const GLfloat g_quad_vertex_buffer_data[] = {
 		-1.0f, -1.0f, 0.0f,
