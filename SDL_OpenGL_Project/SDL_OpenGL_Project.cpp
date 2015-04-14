@@ -436,20 +436,19 @@ int main(int argc, char *argv[])
 
 #pragma region RTT_MAIN
 		//Render to out custom MainFBO
+		//stage 1
 		glBindFramebuffer(GL_FRAMEBUFFER, MainFBO);
 
-		MainShader->use();	//Use this shader to write to textures first
-
-		/* The following line tells the CPU program that "vertexData" stuff goes into "posision"
-		parameter of the vertex shader. It also tells us how data is spread within VBO. */
-		glBindVertexArray(All_screen);
-
-		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-		//we need to do the following because unfortunately uniforms cannot be bound to VAOs
-		glUniform2f(MainShader->uniform("mousePos"), (int)e.motion.x, (int)e.motion.y);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
+		advectVelocity->use();
+		glBindVertexArray(inside);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, Velocity0);
+		glUniform1i(advectVelocity->uniform("velocity0"), 0);
 
 		//1st draw call
-		glDrawArrays(GL_TRIANGLES,0,24);
+		glDrawArrays(GL_TRIANGLES,0,3);
 		glBindVertexArray(0);//unbind VAO
 
 #pragma endregion RTT_MAIN
