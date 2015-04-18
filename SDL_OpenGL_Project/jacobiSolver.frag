@@ -18,5 +18,5 @@ void main()
 	float d  = texture2D(divergence,pos).r;
 	float relaxed = (x0 + x1 + y0 + y1 + alpha*d) * beta;
 	
-	pressure1 = texture2D(divergence,pos);//vec4(relaxed);
+	pressure1 = vec4(relaxed);
 }
