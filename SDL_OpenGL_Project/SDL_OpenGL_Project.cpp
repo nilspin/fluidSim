@@ -354,7 +354,7 @@ int main(int argc, char *argv[])
 	glBindTexture(GL_TEXTURE_2D, Pressure0);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, Pressure0, 0);
 
-	GLenum Jacobi_iter_2[3] = { GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	GLenum Jacobi_iter_2[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 	glDrawBuffers(3, Jacobi_iter_2);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -493,6 +493,39 @@ int main(int argc, char *argv[])
 
 
 		//stage 5-------------------------------------------------
+		auto tempFBO = Jacobi_iter_FBO_1;
+		auto tempPressure = Pressure0;
+		for (auto i = 0; i < 100; i++)
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, tempFBO);
+			jacobiSolver->use();
+
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, divergence);
+			glUniform1i(jacobiSolver->uniform("divergence"), 0);
+
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, tempPressure);
+			glUniform1i(jacobiSolver->uniform("pressure0"), 1);
+
+			glBindVertexArray(All_screen);
+
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+
+			glBindVertexArray(0);
+			glBindTexture(GL_TEXTURE_2D, 0);
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+			//swap pressure textures
+			tempPressure = Pressure1;
+			Pressure1 = Pressure0;
+			Pressure0 = tempPressure;
+
+			//swap FBOs
+			tempFBO = Jacobi_iter_FBO_2;
+			Jacobi_iter_FBO_2 = Jacobi_iter_FBO_1;
+			Jacobi_iter_FBO_1 = tempFBO;
+		}
 
 #pragma endregion RTT_MAIN
 
@@ -509,7 +542,7 @@ int main(int argc, char *argv[])
 
 		//Bind out texture in texture unit #0
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, divergence);
+		glBindTexture(GL_TEXTURE_2D, Pressure0);
 
 		//set our 'textureSampler' sampler to use texture unit 0
 		glUniform1i(quadProgram->uniform("textureSampler"),0);
