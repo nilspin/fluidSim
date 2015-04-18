@@ -66,6 +66,7 @@ int main(int argc, char *argv[])
 	ShaderProgram *velocityBoundary = new ShaderProgram();
 	velocityBoundary->initFromFiles("MainShader.vert", "velocityBoundary.frag");
 	velocityBoundary->addAttribute("position");
+	velocityBoundary->addUniform("velocity0");
 
 	//add force--3
 	ShaderProgram *addForce = new ShaderProgram();
@@ -310,7 +311,7 @@ int main(int argc, char *argv[])
 	//set renderTexture as our color attachment#0
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, divergence, 0);
 
-	//now set the list of draw buffers (here we just need 2- color and depth)
+	//now set the list of draw buffers
 	GLenum drawBuffers[5] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3,GL_COLOR_ATTACHMENT4};
 	glDrawBuffers(5, drawBuffers);//this is finally where we tell the driver to draw to this paricular framebuffer
 
@@ -328,12 +329,12 @@ int main(int argc, char *argv[])
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, divergence, 0);
 
 	glBindTexture(GL_TEXTURE_2D, Pressure0);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, Pressure0, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, Pressure0, 0);
 
 	glBindTexture(GL_TEXTURE_2D, Pressure1);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, Pressure1, 0);
 
-	GLenum Jacobi_iter_1[3] = { GL_COLOR_ATTACHMENT0 , GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
+	GLenum Jacobi_iter_1[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2};
 	glDrawBuffers(3, Jacobi_iter_1);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -353,7 +354,7 @@ int main(int argc, char *argv[])
 	glBindTexture(GL_TEXTURE_2D, Pressure0);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, Pressure0, 0);
 
-	GLenum Jacobi_iter_2[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	GLenum Jacobi_iter_2[3] = { GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 	glDrawBuffers(3, Jacobi_iter_2);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -435,34 +436,63 @@ int main(int argc, char *argv[])
 #pragma endregion EVENT_HANDLING
 
 #pragma region RTT_MAIN
+/*		THIS BLOCK IS FOR TESTING ONLY
+		glBindFramebuffer(GL_FRAMEBUFFER, MainFBO);
+		MainShader->use();
+		glUniform2f(MainShader->uniform("mousePos"), (int)e.motion.x, (int)e.motion.y);
+		glBindVertexArray(inside);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
+//		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+*/
+
 		//Render to out custom MainFBO
-		//stage 1
+		//stage 1-----------------------------------------------
 		glBindFramebuffer(GL_FRAMEBUFFER, MainFBO);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
 		advectVelocity->use();
-		glBindVertexArray(inside);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, Velocity0);
 		glUniform1i(advectVelocity->uniform("velocity0"), 0);
-
+		glBindVertexArray(All_screen);
 		//1st draw call
-		glDrawArrays(GL_TRIANGLES,0,3);
+		glDrawArrays(GL_TRIANGLES,0,6);
 		glBindVertexArray(0);//unbind VAO
+		glBindTexture(GL_TEXTURE_2D, 0);
 
-		//stage 2
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//stage 2------------------------------------------------
+//		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		addForce->use();
-		glBindVertexArray(All_screen);
 		//we need to do the following because unfortunately uniforms cannot be bound to VAOs
 		glUniform2f(addForce->uniform("mousePos"), (int)e.motion.x, (int)e.motion.y);
-		
+		glBindVertexArray(All_screen);
 		//2nd draw call
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 
+		//stage 3-----------------------------WE'RE SKIPPING THIS STAGE FOR NOW
+//		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+//		glBindVertexArray(boundary);
+//		velocityBoundary->use();
+		
+		//stage 4------------------------------------------------
+//		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		divergenceShader->use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, Velocity1);
+		glUniform1i(divergenceShader->uniform("velocity1"), 0);
+		glBindVertexArray(All_screen);
+		//4th draw call
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+
+		//stage 5-------------------------------------------------
 
 #pragma endregion RTT_MAIN
 
@@ -479,7 +509,7 @@ int main(int argc, char *argv[])
 
 		//Bind out texture in texture unit #0
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, Velocity1);
+		glBindTexture(GL_TEXTURE_2D, divergence);
 
 		//set our 'textureSampler' sampler to use texture unit 0
 		glUniform1i(quadProgram->uniform("textureSampler"),0);
