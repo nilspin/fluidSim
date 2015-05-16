@@ -4,5 +4,5 @@ layout(location=1) out vec4 velocity1;
 
 void main()
 {
-	velocity1 = texture2D(velocity0, pos - texture2D(velocity0,pos).xy);
+	velocity1 = texture(velocity0, pos - texture(velocity0,pos).xy);
 }

@@ -15,7 +15,7 @@ void main()
 	float y0 = texture(pressure0, pos - vec2(0, py)).x;
 	float y1 = texture(pressure0, pos + vec2(0, py)).x;
 	
-	float d  = texture2D(divergence,pos).r;
+	float d  = texture(divergence,pos).r;
 	float relaxed = (x0 + x1 + y0 + y1 + alpha*d) * beta;
 	
 	pressure1 = vec4(relaxed);

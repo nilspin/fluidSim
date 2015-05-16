@@ -6,7 +6,7 @@ void main()
 {
 	float x = mousePos.x/640;
 	float y = mousePos.y/480;
-	vec2 mouseNormalised = vec2(2*x -1, 1 - 2*y);	//Don't know why I need to do this
-	float d = distance(pos,mouseNormalised);
-	velocity1 = vec4(d,d,d,1.0);
+	vec2 mouseNormalised = vec2(x, 1 - y);	//Because in OGL ordinates start from bottom, not up.
+	float d = 1.0 - min(distance(pos,mouseNormalised),1.0);
+	velocity1 = vec4(d);
 }

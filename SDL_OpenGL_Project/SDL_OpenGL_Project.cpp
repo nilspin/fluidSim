@@ -54,7 +54,9 @@ int main(int argc, char *argv[])
 	ShaderProgram *quadProgram = new ShaderProgram();
 	quadProgram->initFromFiles("quadProgram.vert", "quadProgram.frag");
 	quadProgram->addAttribute("quad_vertices");
-	quadProgram->addUniform("textureSampler");
+	quadProgram->addUniform("texturesampler");
+//	quadProgram->addUniform("velocity0");
+//	quadProgram->addUniform("pressure0");
 
 	//advect velocity--1
 	ShaderProgram *advectVelocity = new ShaderProgram();
@@ -246,6 +248,8 @@ int main(int argc, char *argv[])
 	//filtering
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	//set renderTexture as our color attachment#0
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, renderTexture, 0);
 ///*
@@ -493,10 +497,10 @@ int main(int argc, char *argv[])
 
 
 		//stage 5-------------------------------------------------
-		auto tempFBO = Jacobi_iter_FBO_1;
+/*		auto tempFBO = Jacobi_iter_FBO_1;
 		auto tempPressure = Pressure0;
-		for (auto i = 0; i < 100; i++)
-		{
+		for (auto i = 0; i < 35; i++)
+		{ 
 			glBindFramebuffer(GL_FRAMEBUFFER, tempFBO);
 			jacobiSolver->use();
 
@@ -526,7 +530,26 @@ int main(int argc, char *argv[])
 			Jacobi_iter_FBO_2 = Jacobi_iter_FBO_1;
 			Jacobi_iter_FBO_1 = tempFBO;
 		}
+*/
+		//stage 6---------------------------------------------------------------
+/*		glBindFramebuffer(GL_FRAMEBUFFER, MainFBO);
 
+		subtractPressureGradient->use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, Pressure0);
+		glUniform1i(subtractPressureGradient->uniform("pressure0"), 0);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, Velocity1);
+		glUniform1i(subtractPressureGradient->uniform("velocity1"), 1);
+
+		glBindVertexArray(All_screen);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		glBindVertexArray(0);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+*/
 #pragma endregion RTT_MAIN
 
 #pragma region DRAW_TO_SCREEN
@@ -542,10 +565,12 @@ int main(int argc, char *argv[])
 
 		//Bind out texture in texture unit #0
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, Pressure0);
+		glBindTexture(GL_TEXTURE_2D, divergence);
+		glUniform1i(quadProgram->uniform("texturesampler"),0);
 
-		//set our 'textureSampler' sampler to use texture unit 0
-		glUniform1i(quadProgram->uniform("textureSampler"),0);
+//		glActiveTexture(GL_TEXTURE1);
+//		glBindTexture(GL_TEXTURE_2D, Pressure0);
+//		glUniform1i(quadProgram->uniform("pressure0"), 1);
 
 		//1st attribute : quad vertices
 		glEnableVertexAttribArray(0);	//note that this corresponds to the layout=0 in shader
