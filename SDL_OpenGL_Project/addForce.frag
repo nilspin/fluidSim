@@ -7,20 +7,27 @@ layout(location=1) out vec4 velocity1;
 
 void main()
 {
-	float X = mousePos.x/640;
-	float Y = mousePos.y/480;
-	vec2 mouseNormalised = vec2(X, 1 - Y);
+	//DATA
+	
+	vec2 velocityIn = texture(velocity0,pos).xy;
+	velocityIn *= 0.99;
+
+	vec2 mouseNormalised = vec2(2*mousePos.x/640 - 1, 1 - 2*mousePos.y/480);
+
+	vec2 displacement =vec2(differenceLastPos.x/640 , differenceLastPos.y/480);
 
 	float dt = 1.0/60;
-	float normalisedDifferenceX = differenceLastPos.x/640 ;
-	float normalisedDifferenceY = differenceLastPos.y/480 ;
-
-	vec2 displacement = vec2(normalisedDifferenceX,normalisedDifferenceY);
-
+	
 	vec2 mouseVel = displacement/dt;
 
-	vec2 velocityIn = vec2(texture(velocity0, pos).xy);
-
-	float dist = distance(pos,mouseNormalised);
-	velocity1 = vec4(dist,dist,dist,1.0);
+	float radius = 0.1;
+	if(abs(distance(pos,mouseNormalised)) < radius)
+	{
+		vec2 velocityOut = velocityIn + mouseVel;
+		velocity1 = vec4(velocityOut,0,1.0);
+	}
+	else
+	{
+		velocity1 = texture(velocity0,pos);
+	}
 }

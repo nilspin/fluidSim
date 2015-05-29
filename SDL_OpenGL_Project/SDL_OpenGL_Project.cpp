@@ -456,16 +456,16 @@ int main(int argc, char *argv[])
 
 #pragma region RTT_MAIN
 //		THIS BLOCK IS FOR TESTING ONLY
-		glBindFramebuffer(GL_FRAMEBUFFER, MainFBO);
+/*		glBindFramebuffer(GL_FRAMEBUFFER, MainFBO);
 		MainShader->use();
 		glUniform2f(MainShader->uniform("mousePos"), (int)e.motion.x, (int)e.motion.y);
 		glBindVertexArray(All_screen);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+*/
 
 
-/*
 		//Render to out custom MainFBO
 		glBindFramebuffer(GL_FRAMEBUFFER, MainFBO);
 
@@ -486,7 +486,7 @@ int main(int argc, char *argv[])
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 		//stage 2-----------------------------------------------
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+/*		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		advectVelocity->use();
 
 		glActiveTexture(GL_TEXTURE0);
@@ -502,7 +502,7 @@ int main(int argc, char *argv[])
 		glBindVertexArray(0);//unbind VAO
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+*/
 		//stage 3-----------------------------WE'RE SKIPPING THIS STAGE FOR NOW
 //		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -512,7 +512,7 @@ int main(int argc, char *argv[])
 		//stage 4------------------------------------------------
 //		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		divergenceShader->use();
+/*		divergenceShader->use();
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, Velocity1);
 		glUniform1i(divergenceShader->uniform("velocity1"), 0);
@@ -592,7 +592,7 @@ int main(int argc, char *argv[])
 
 		//Bind out texture in texture unit #0
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, Velocity0);
+		glBindTexture(GL_TEXTURE_2D, Velocity1);
 		glUniform1i(quadProgram->uniform("texturesampler"),0);
 
 //		glActiveTexture(GL_TEXTURE1);
