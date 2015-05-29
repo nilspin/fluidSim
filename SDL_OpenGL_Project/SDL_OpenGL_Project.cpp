@@ -486,7 +486,6 @@ int main(int argc, char *argv[])
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 		//stage 2-----------------------------------------------
-/*		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		advectVelocity->use();
 
 		glActiveTexture(GL_TEXTURE0);
@@ -502,9 +501,8 @@ int main(int argc, char *argv[])
 		glBindVertexArray(0);//unbind VAO
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-*/
+
 		//stage 3-----------------------------WE'RE SKIPPING THIS STAGE FOR NOW
-//		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 //		glBindVertexArray(boundary);
 //		velocityBoundary->use();
