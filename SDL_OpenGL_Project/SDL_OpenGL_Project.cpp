@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 	ShaderProgram *divergenceShader = new ShaderProgram();
 	divergenceShader->initFromFiles("MainShader.vert","divergence.frag");
 	divergenceShader->addAttribute("position");
-	divergenceShader->addUniform("velocity1");
+	divergenceShader->addUniform("velocity0");
 
 	//jacobi solver shader --5
 	ShaderProgram *jacobiSolver = new ShaderProgram();
@@ -104,7 +104,13 @@ int main(int argc, char *argv[])
 	subtractPressureGradient->initFromFiles("MainShader.vert","subtractPressureGradient.frag");
 	subtractPressureGradient->addAttribute("position");
 	subtractPressureGradient->addUniform("pressure0");
-	subtractPressureGradient->addUniform("velocity1");
+	subtractPressureGradient->addUniform("velocity0");
+
+	//copy v1 to v0 --8
+	ShaderProgram *texCopyShader = new ShaderProgram();
+	texCopyShader->initFromFiles("MainShader.vert", "texCopyShader.frag");
+	texCopyShader->addAttribute("position");
+	texCopyShader->addUniform("velocity1");
 
 
 #pragma endregion SHADER_FUNCTIONS
@@ -116,12 +122,12 @@ int main(int argc, char *argv[])
 	glBindVertexArray(All_screen);
 
 	GLfloat canvas[] = {		//DATA
-		-1,-1,
-		-1,1,
-		1,-1,
-		1,-1,
-		1,1,
-		-1,1
+		-1.0f,-1.0f,
+		-1.0f, 1.0f,
+		1.0f, -1.0f,
+		1.0f, -1.0f,
+		1.0f, 1.0f,
+		-1.0f, 1.0f
 	};	//Don't need index data for this peasant mesh!
 
 	GLuint All_screenVBO;//VBO for fluid wall
@@ -247,7 +253,7 @@ int main(int argc, char *argv[])
 	GLuint renderTexture;
 	glGenTextures(1, &renderTexture);
 	glBindTexture(GL_TEXTURE_2D, renderTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
 	//filtering
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -273,10 +279,10 @@ int main(int argc, char *argv[])
 	GLuint Velocity0;
 	glGenTextures(1, &Velocity0);
 	glBindTexture(GL_TEXTURE_2D, Velocity0);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
 	//filtering
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	//set renderTexture as our color attachment#0
@@ -285,10 +291,10 @@ int main(int argc, char *argv[])
 	GLuint Velocity1;
 	glGenTextures(1, &Velocity1);
 	glBindTexture(GL_TEXTURE_2D, Velocity1);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
 	//filtering
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	//set renderTexture as our color attachment#1
@@ -297,10 +303,10 @@ int main(int argc, char *argv[])
 	GLuint Pressure0;
 	glGenTextures(1, &Pressure0);
 	glBindTexture(GL_TEXTURE_2D, Pressure0);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
 	//filtering
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	//set renderTexture as our color attachment#0
@@ -309,10 +315,10 @@ int main(int argc, char *argv[])
 	GLuint Pressure1;
 	glGenTextures(1, &Pressure1);
 	glBindTexture(GL_TEXTURE_2D, Pressure1);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
 	//filtering
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	//set renderTexture as our color attachment#0
@@ -321,10 +327,10 @@ int main(int argc, char *argv[])
 	GLuint divergence;
 	glGenTextures(1, &divergence);
 	glBindTexture(GL_TEXTURE_2D, divergence);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
 	//filtering
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	//set renderTexture as our color attachment#0
@@ -455,8 +461,8 @@ int main(int argc, char *argv[])
 #pragma endregion EVENT_HANDLING
 
 #pragma region RTT_MAIN
-//		THIS BLOCK IS FOR TESTING ONLY
-/*		glBindFramebuffer(GL_FRAMEBUFFER, MainFBO);
+/*/		THIS BLOCK IS FOR TESTING ONLY
+		glBindFramebuffer(GL_FRAMEBUFFER, MainFBO);
 		MainShader->use();
 		glUniform2f(MainShader->uniform("mousePos"), (int)e.motion.x, (int)e.motion.y);
 		glBindVertexArray(All_screen);
@@ -500,7 +506,7 @@ int main(int argc, char *argv[])
 		glDrawArrays(GL_TRIANGLES,0,6);
 		glBindVertexArray(0);//unbind VAO
 		glBindTexture(GL_TEXTURE_2D, 0);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		//stage 3-----------------------------WE'RE SKIPPING THIS STAGE FOR NOW
 
@@ -508,23 +514,23 @@ int main(int argc, char *argv[])
 //		velocityBoundary->use();
 		
 		//stage 4------------------------------------------------
-//		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-/*		divergenceShader->use();
+
+		divergenceShader->use();
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, Velocity1);
-		glUniform1i(divergenceShader->uniform("velocity1"), 0);
+		glBindTexture(GL_TEXTURE_2D, Velocity0);
+		glUniform1i(divergenceShader->uniform("velocity0"), 0);
 		glBindVertexArray(All_screen);
 		//4th draw call
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 		glBindTexture(GL_TEXTURE_2D, 0);
 
-*/
+
 		//stage 5-------------------------------------------------
-/*		auto tempFBO = Jacobi_iter_FBO_1;
+		auto tempFBO = Jacobi_iter_FBO_1;
 		auto tempPressure = Pressure0;
-		for (auto i = 0; i < 35; i++)
+		for (auto i = 0; i < 10; i++)
 		{ 
 			glBindFramebuffer(GL_FRAMEBUFFER, tempFBO);
 			jacobiSolver->use();
@@ -555,9 +561,9 @@ int main(int argc, char *argv[])
 			Jacobi_iter_FBO_2 = Jacobi_iter_FBO_1;
 			Jacobi_iter_FBO_1 = tempFBO;
 		}
-*/
+
 		//stage 6---------------------------------------------------------------
-/*		glBindFramebuffer(GL_FRAMEBUFFER, MainFBO);
+		glBindFramebuffer(GL_FRAMEBUFFER, MainFBO);
 
 		subtractPressureGradient->use();
 		glActiveTexture(GL_TEXTURE0);
@@ -565,8 +571,8 @@ int main(int argc, char *argv[])
 		glUniform1i(subtractPressureGradient->uniform("pressure0"), 0);
 
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, Velocity1);
-		glUniform1i(subtractPressureGradient->uniform("velocity1"), 1);
+		glBindTexture(GL_TEXTURE_2D, Velocity0);
+		glUniform1i(subtractPressureGradient->uniform("velocity0"), 1);
 
 		glBindVertexArray(All_screen);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -574,7 +580,23 @@ int main(int argc, char *argv[])
 		glBindVertexArray(0);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-*/
+
+		//stage 7---- copy v1 to v0
+		texCopyShader->use();
+		glBindFramebuffer(GL_FRAMEBUFFER, MainFBO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, Velocity1);
+		glUniform1i(texCopyShader->uniform("velocity1"), 0);
+
+
+		glBindVertexArray(All_screen);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
 #pragma endregion RTT_MAIN
 
 #pragma region DRAW_TO_SCREEN
@@ -590,7 +612,7 @@ int main(int argc, char *argv[])
 
 		//Bind out texture in texture unit #0
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, Velocity1);
+		glBindTexture(GL_TEXTURE_2D, Velocity0);
 		glUniform1i(quadProgram->uniform("texturesampler"),0);
 
 //		glActiveTexture(GL_TEXTURE1);
