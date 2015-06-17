@@ -10,5 +10,5 @@ Project to implement real-time 2D fluid on GPU, written in **C++** using **OpenG
 
 Currently it renders :
 
-[Screenshot-1](https://github.com/nilspin/SDL_OpenGL_Project/blob/dev/progress_videos/FluidSimulated-1.png "Screenshot 1")
-[Screenshot-2](https://github.com/nilspin/SDL_OpenGL_Project/blob/dev/progress_videos/FluidSimulated-2.png "Screenshot 2")
+![Screenshot-1](https://github.com/nilspin/SDL_OpenGL_Project/blob/dev/progress_videos/FluidSimulated-1.png "Screenshot 1")
+![Screenshot-2](https://github.com/nilspin/SDL_OpenGL_Project/blob/dev/progress_videos/FluidSimulated-2.png "Screenshot 2")
