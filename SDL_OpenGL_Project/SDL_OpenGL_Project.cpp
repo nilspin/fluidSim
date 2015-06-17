@@ -217,25 +217,6 @@ int main(int argc, char *argv[])
 	glBindBuffer(GL_ARRAY_BUFFER, boundaryVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(boundaryWall), &boundaryWall, GL_STATIC_DRAW);
 
-	/*indexVBO
-	GLushort indices[] = {
-		//left
-		0,6,3,
-		6,11,3,
-		//bottom
-		5,3,2,
-		5,9,2,
-		//right
-		7,1,10,
-		1,10,2,
-		//up
-		0,1,4,
-		1,8,4
-	};
-	glGenBuffers(1, &boundaryIndexVBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, boundaryIndexVBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), &indices, GL_STATIC_DRAW);
-	*/
 
 	//Assign attribs
 	glVertexAttribPointer(MainShader->attribute("position"), 2, GL_FLOAT, GL_FALSE, 0, 0);
