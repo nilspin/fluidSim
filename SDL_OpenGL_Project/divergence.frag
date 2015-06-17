@@ -1,3 +1,5 @@
+#version 400
+
 in vec2 pos;
 uniform sampler2D velocity0;
 layout(location=4) out vec4 divergence;

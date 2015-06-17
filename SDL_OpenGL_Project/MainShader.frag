@@ -1,3 +1,5 @@
+#version 400
+
 in vec3 Color;
 in vec2 pos;
 uniform vec2 mousePos;

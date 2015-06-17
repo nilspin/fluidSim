@@ -1,3 +1,5 @@
+#version 400
+
 uniform sampler2D velocity1;
 uniform sampler2D Ink;
 in vec2 pos;

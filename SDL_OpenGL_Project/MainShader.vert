@@ -1,3 +1,5 @@
+#version 400
+
 in vec3 position;
 out vec2 pos;
 out vec3 Color;

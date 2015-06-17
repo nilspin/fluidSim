@@ -1,3 +1,5 @@
+#version 400
+
 in vec2 pos;
 uniform vec2 mousePos;
 uniform vec2 differenceLastPos;
@@ -22,7 +24,7 @@ void main()
 	
 	vec2 mouseVel = displacement/dt;
 
-	float radius = 0.1;
+	float radius = 0.05;
 	if(abs(distance(pos,mouseNormalised)) < radius)
 	{
 		vec2 velocityOut = 0.000001*velocityIn + 0.001*mouseVel;

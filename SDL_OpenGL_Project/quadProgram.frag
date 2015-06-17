@@ -1,3 +1,5 @@
+#version 400
+
 //uniform sampler2D velocity0;
 //uniform sampler2D pressure0;
 uniform sampler2D texturesampler;
