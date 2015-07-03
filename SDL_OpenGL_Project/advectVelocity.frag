@@ -7,7 +7,7 @@ layout(location=0) out vec4 velocity0;
 
 void main()
 {
-	float dt = 1.0/60;
+	float dt = 1.0/100;
 
 	vec2 FragPos = pos - dt*(texture(velocity1,pos).xy);
 
