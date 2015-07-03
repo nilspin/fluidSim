@@ -67,8 +67,9 @@ int main(int argc, char *argv[])
 
 	//advect velocity boundary--2
 	ShaderProgram *velocityBoundary = new ShaderProgram();
-	velocityBoundary->initFromFiles("MainShader.vert", "velocityBoundary.frag");
+	velocityBoundary->initFromFiles("boundary.vert", "velocityBoundary.frag");
 	velocityBoundary->addAttribute("position");
+	velocityBoundary->addAttribute("offset");
 	velocityBoundary->addUniform("velocity0");
 
 	//add force--3
@@ -93,11 +94,12 @@ int main(int argc, char *argv[])
 	jacobiSolver->addUniform("divergence");
 
 	//pressure boundary shader --6 this is same as #5 but it acts on boundary only
-	ShaderProgram *pressureBoundary = new ShaderProgram();
-	pressureBoundary->initFromFiles("MainShader.vert", "jacobiSolver.frag");
-	pressureBoundary->addAttribute("position");
-	pressureBoundary->addUniform("pressure0");
-	pressureBoundary->addUniform("divergence");
+//	ShaderProgram *pressureBoundary = new ShaderProgram();
+//	pressureBoundary->initFromFiles("boundary.vert", "jacobiSolver.frag");
+//	pressureBoundary->addAttribute("position");
+//	pressureBoundary->addAttribute("offset");
+//	pressureBoundary->addUniform("pressure0");
+//	pressureBoundary->addUniform("divergence");
 
 	//subtract pressure gradient --7
 	ShaderProgram *subtractPressureGradient = new ShaderProgram();
@@ -169,7 +171,7 @@ int main(int argc, char *argv[])
 	//Another VAO for boundary
 	glGenVertexArrays(1, &boundary);
 	glBindVertexArray(boundary);
-	float boundaryWall[] = {
+	GLfloat boundaryWall[] = {
 
 		//left
 		-1, 1, 1, 0,
@@ -207,8 +209,10 @@ int main(int argc, char *argv[])
 
 
 	//Assign attribs
-	glVertexAttribPointer(MainShader->attribute("position"), 2, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(MainShader->attribute("position"));
+	glVertexAttribPointer(velocityBoundary->attribute("position"), 2, GL_FLOAT, GL_FALSE, 4*sizeof(GL_FLOAT), 0);
+	glEnableVertexAttribArray(velocityBoundary->attribute("position"));
+	glVertexAttribPointer(velocityBoundary->attribute("offset"), 2, GL_FLOAT, GL_FALSE, 4*sizeof(GL_FLOAT), 0);
+	glEnableVertexAttribArray(velocityBoundary->attribute("offset"));
 	glBindVertexArray(0);	//unbind VAO
 
 #pragma endregion MESH_DATA
@@ -454,7 +458,7 @@ int main(int argc, char *argv[])
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, Velocity0);	//add V0 as input texture
 		glUniform1i(addForce->uniform("velocity0"), 0);
-		glBindVertexArray(All_screen);
+		glBindVertexArray(inside);
 		//2nd draw call
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
@@ -470,7 +474,7 @@ int main(int argc, char *argv[])
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, Velocity1);
 		glUniform1i(advectVelocity->uniform("Ink"), 1);
-		glBindVertexArray(All_screen);
+		glBindVertexArray(inside);
 		//1st draw call
 		glDrawArrays(GL_TRIANGLES,0,6);
 		glBindVertexArray(0);//unbind VAO
@@ -489,7 +493,7 @@ int main(int argc, char *argv[])
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, Velocity0);
 		glUniform1i(divergenceShader->uniform("velocity0"), 0);
-		glBindVertexArray(All_screen);
+		glBindVertexArray(inside);
 		//4th draw call
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
@@ -512,7 +516,7 @@ int main(int argc, char *argv[])
 			glBindTexture(GL_TEXTURE_2D, tempPressure);
 			glUniform1i(jacobiSolver->uniform("pressure0"), 1);
 
-			glBindVertexArray(All_screen);
+			glBindVertexArray(inside);
 
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -543,7 +547,7 @@ int main(int argc, char *argv[])
 		glBindTexture(GL_TEXTURE_2D, Velocity0);
 		glUniform1i(subtractPressureGradient->uniform("velocity0"), 1);
 
-		glBindVertexArray(All_screen);
+		glBindVertexArray(inside);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		glBindVertexArray(0);
@@ -558,7 +562,7 @@ int main(int argc, char *argv[])
 		glUniform1i(texCopyShader->uniform("velocity1"), 0);
 
 
-		glBindVertexArray(All_screen);
+		glBindVertexArray(inside);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 
