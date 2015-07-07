@@ -46,14 +46,14 @@ int main(int argc, char *argv[])
 
 	//=============================================================================================
 	//Shader that contains main logic
-	ShaderProgram *MainShader = new ShaderProgram();
+	unique_ptr<ShaderProgram> MainShader(new ShaderProgram());
 	MainShader->initFromFiles("MainShader.vert", "MainShader.frag");
 	MainShader->addAttribute("position");
 	MainShader->addUniform("mousePos");
 	//	MainShader->addUniform("MVP");
 
 	//another shader to sample from texture and draw on quadVBO
-	ShaderProgram *quadProgram = new ShaderProgram();
+	unique_ptr<ShaderProgram> quadProgram(new ShaderProgram());
 	quadProgram->initFromFiles("quadProgram.vert", "quadProgram.frag");
 	quadProgram->addAttribute("quad_vertices");
 	quadProgram->addUniform("texturesampler");
@@ -61,21 +61,21 @@ int main(int argc, char *argv[])
 //	quadProgram->addUniform("pressure0");
 
 	//advect velocity--1
-	ShaderProgram *advectVelocity = new ShaderProgram();
+	unique_ptr<ShaderProgram> advectVelocity(new ShaderProgram());
 	advectVelocity->initFromFiles("MainShader.vert", "advectVelocity.frag");
 	advectVelocity->addAttribute("position");
 	advectVelocity->addUniform("velocity1");
 	advectVelocity->addUniform("Ink");
 
 	//advect velocity boundary--2
-	ShaderProgram *velocityBoundary = new ShaderProgram();
+	unique_ptr<ShaderProgram> velocityBoundary(new ShaderProgram());
 	velocityBoundary->initFromFiles("boundary.vert", "velocityBoundary.frag");
 	velocityBoundary->addAttribute("position");
 	velocityBoundary->addAttribute("offset");
 	velocityBoundary->addUniform("velocity0");
 
 	//add force--3
-	ShaderProgram *addForce = new ShaderProgram();
+	unique_ptr<ShaderProgram> addForce(new ShaderProgram());
 	addForce->initFromFiles("MainShader.vert","addForce.frag");
 	addForce->addAttribute("position");
 	addForce->addUniform("mousePos");
@@ -83,20 +83,20 @@ int main(int argc, char *argv[])
 	addForce->addUniform("velocity0");
 
 	//divergence shader--4
-	ShaderProgram *divergenceShader = new ShaderProgram();
+	unique_ptr<ShaderProgram> divergenceShader(new ShaderProgram());
 	divergenceShader->initFromFiles("MainShader.vert","divergence.frag");
 	divergenceShader->addAttribute("position");
 	divergenceShader->addUniform("velocity0");
 
 	//jacobi solver shader --5
-	ShaderProgram *jacobiSolver = new ShaderProgram();
+	unique_ptr<ShaderProgram> jacobiSolver(new ShaderProgram());
 	jacobiSolver->initFromFiles("MainShader.vert", "jacobiSolver.frag");
 	jacobiSolver->addAttribute("position");
 	jacobiSolver->addUniform("pressure0");
 	jacobiSolver->addUniform("divergence");
 
 	//pressure boundary shader --6 this is same as #5 but it acts on boundary only
-//	ShaderProgram *pressureBoundary = new ShaderProgram();
+//	unique_ptr<ShaderProgram> pressureBoundary(new ShaderProgram());
 //	pressureBoundary->initFromFiles("boundary.vert", "jacobiSolver.frag");
 //	pressureBoundary->addAttribute("position");
 //	pressureBoundary->addAttribute("offset");
@@ -104,14 +104,14 @@ int main(int argc, char *argv[])
 //	pressureBoundary->addUniform("divergence");
 
 	//subtract pressure gradient --7
-	ShaderProgram *subtractPressureGradient = new ShaderProgram();
+	unique_ptr<ShaderProgram> subtractPressureGradient(new ShaderProgram());
 	subtractPressureGradient->initFromFiles("MainShader.vert","subtractPressureGradient.frag");
 	subtractPressureGradient->addAttribute("position");
 	subtractPressureGradient->addUniform("pressure0");
 	subtractPressureGradient->addUniform("velocity0");
 
 	//copy v1 to v0 --8
-	ShaderProgram *texCopyShader = new ShaderProgram();
+	unique_ptr<ShaderProgram> texCopyShader(new ShaderProgram());
 	texCopyShader->initFromFiles("MainShader.vert", "texCopyShader.frag");
 	texCopyShader->addAttribute("position");
 	texCopyShader->addUniform("velocity1");
@@ -616,10 +616,6 @@ int main(int argc, char *argv[])
 //			SDL_Delay(1000 / FPS - (SDL_GetTicks() - start));
 	}
 	
-	MainShader->disable();
-	MainShader->~ShaderProgram();
-	quadProgram->disable();
-	quadProgram->~ShaderProgram();
 	SDL_GL_DeleteContext(context);
 	SDL_Quit();
 
