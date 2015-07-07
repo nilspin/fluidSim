@@ -213,7 +213,7 @@ int main(int argc, char *argv[])
 	//Assign attribs
 	glVertexAttribPointer(velocityBoundary->attribute("position"), 2, GL_FLOAT, GL_FALSE, 4*sizeof(GL_FLOAT), 0);
 	glEnableVertexAttribArray(velocityBoundary->attribute("position"));
-	glVertexAttribPointer(velocityBoundary->attribute("offset"), 2, GL_FLOAT, GL_FALSE, 4*sizeof(GL_FLOAT), 0);
+	glVertexAttribPointer(velocityBoundary->attribute("offset"), 2, GL_FLOAT, GL_FALSE, 4*sizeof(GL_FLOAT), BUFFER_OFFSET(2*sizeof(GL_FLOAT)));
 	glEnableVertexAttribArray(velocityBoundary->attribute("offset"));
 	glBindVertexArray(0);	//unbind VAO
 
