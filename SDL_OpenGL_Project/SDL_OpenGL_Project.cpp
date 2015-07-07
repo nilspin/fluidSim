@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 	pressureBoundary->addAttribute("position");
 	pressureBoundary->addAttribute("offset");
 	pressureBoundary->addUniform("pressure0");
-	pressureBoundary->addUniform("divergence");
+//	pressureBoundary->addUniform("divergence");
 
 	//subtract pressure gradient --7
 	unique_ptr<ShaderProgram> subtractPressureGradient(new ShaderProgram());
@@ -532,6 +532,10 @@ int main(int argc, char *argv[])
 			pressureBoundary->use();
 			glBindVertexArray(boundary);
 
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, Pressure0);
+			glUniform1i(pressureBoundary->uniform("pressure0"), 0);
+
 			glDrawArrays(GL_TRIANGLES, 0, 24);
 			glBindVertexArray(0);
 			glBindTexture(GL_TEXTURE_2D, 0);
@@ -588,7 +592,7 @@ int main(int argc, char *argv[])
 //--------------------------------------------------------------------------------------
 		//By now we have successfully rendered to our texture. We will now draw on screen
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
-//		glViewport(0, 0, width, 768);
+
 
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
