@@ -147,8 +147,8 @@ int main(int argc, char *argv[])
 	glGenVertexArrays(1, &inside);
 	glBindVertexArray(inside);
 
-	float px = 1.0 / width; px = 150 * px;
-	float py = 1.0 / height;  py = 150 * py;
+	float px = 1.0 / width; px = 15 * px;
+	float py = 1.0 / height;  py = 15 * py;
 	float x = 1 - px;
 	float y = 1 - py;
 	/*Another VBO (this one is for fluid)*/
@@ -436,7 +436,7 @@ int main(int argc, char *argv[])
 #pragma endregion EVENT_HANDLING
 
 #pragma region RTT_MAIN
-/*/		THIS BLOCK IS FOR TESTING ONLY
+/*/		THIS BLOCK IS FOR TESTING ONLY. Do not remove.
 		glBindFramebuffer(GL_FRAMEBUFFER, MainFBO);
 		MainShader->use();
 		glUniform2f(MainShader->uniform("mousePos"), (int)e.motion.x, (int)e.motion.y);
@@ -446,12 +446,10 @@ int main(int argc, char *argv[])
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 */
 
-
 		//Render to out custom MainFBO
 		glBindFramebuffer(GL_FRAMEBUFFER, MainFBO);
 
-		//stage 1------------------------------------------------
-		//		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		//stage 1------------------------------Force addition
 
 		addForce->use();
 		//we need to do the following because unfortunately uniforms cannot be bound to VAOs
@@ -466,7 +464,7 @@ int main(int argc, char *argv[])
 		glBindVertexArray(0);
 		glBindTexture(GL_TEXTURE_2D, 0);
 
-		//stage 2-----------------------------------------------
+		//stage 2--------------------------------Advection
 		advectVelocity->use();
 
 		glActiveTexture(GL_TEXTURE0);
@@ -483,7 +481,7 @@ int main(int argc, char *argv[])
 		glBindTexture(GL_TEXTURE_2D, 0);
 //		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-		//stage 3-----------------------------WE'RE SKIPPING THIS STAGE FOR NOW
+		//stage 3-----------------------------boundary for velocity
 		glBindVertexArray(boundary);
 		
 		velocityBoundary->use();
@@ -496,7 +494,7 @@ int main(int argc, char *argv[])
 		glBindVertexArray(0);//unbind VAO
 		glBindTexture(GL_TEXTURE_2D, 0);
 		
-		//stage 4------------------------------------------------
+		//stage 4--------------------------------divergence calculation
 
 
 		divergenceShader->use();
@@ -510,7 +508,7 @@ int main(int argc, char *argv[])
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 
-		//stage 5-------------------------------------------------
+		//stage 5--------------------------Pressure computation
 		auto tempFBO = Jacobi_iter_FBO_1;
 		auto tempPressure = Pressure0;
 		for (auto i = 0; i < 10; i++)
@@ -530,7 +528,7 @@ int main(int argc, char *argv[])
 
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 
-			//------------------------------------------Now pressure boundary
+			//Stage 6----------------------------------Pressure boundary
 			pressureBoundary->use();
 			glBindVertexArray(boundary);
 
@@ -550,7 +548,7 @@ int main(int argc, char *argv[])
 			Jacobi_iter_FBO_1 = tempFBO;
 		}
 
-		//stage 6---------------------------------------------------------------
+		//stage 6----------------Subtraction of pressure gradient to get divergence free velocity
 		glBindFramebuffer(GL_FRAMEBUFFER, MainFBO);
 
 		subtractPressureGradient->use();
@@ -567,11 +565,10 @@ int main(int argc, char *argv[])
 
 		glBindVertexArray(0);
 		glBindTexture(GL_TEXTURE_2D, 0);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		//stage 7---- copy v1 to v0
 		texCopyShader->use();
-		glBindFramebuffer(GL_FRAMEBUFFER, MainFBO);
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, Velocity1);
 		glUniform1i(texCopyShader->uniform("velocity1"), 0);
