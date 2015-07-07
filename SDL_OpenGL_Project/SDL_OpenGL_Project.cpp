@@ -96,12 +96,12 @@ int main(int argc, char *argv[])
 	jacobiSolver->addUniform("divergence");
 
 	//pressure boundary shader --6 this is same as #5 but it acts on boundary only
-//	unique_ptr<ShaderProgram> pressureBoundary(new ShaderProgram());
-//	pressureBoundary->initFromFiles("boundary.vert", "jacobiSolver.frag");
-//	pressureBoundary->addAttribute("position");
-//	pressureBoundary->addAttribute("offset");
-//	pressureBoundary->addUniform("pressure0");
-//	pressureBoundary->addUniform("divergence");
+	unique_ptr<ShaderProgram> pressureBoundary(new ShaderProgram());
+	pressureBoundary->initFromFiles("boundary.vert", "jacobiSolverBoundary.frag");
+	pressureBoundary->addAttribute("position");
+	pressureBoundary->addAttribute("offset");
+	pressureBoundary->addUniform("pressure0");
+	pressureBoundary->addUniform("divergence");
 
 	//subtract pressure gradient --7
 	unique_ptr<ShaderProgram> subtractPressureGradient(new ShaderProgram());
