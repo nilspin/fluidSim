@@ -9,7 +9,9 @@ in vec2 pos;
 
 void main()
 {
-//	Color = textureOffset(texturesampler,pos,ivec2(0,0));
+//for white color
+//	vec4 temp = texture(texturesampler, pos);
+//	Color = abs(vec4(vec3(temp.x + temp.y / 2.0),1.0));
 
 //	Color = vec4((texture(pressure0, pos)).x,(texture(velocity0, pos)*1.5+0.5).xy,1.0);
 
@@ -18,5 +20,5 @@ void main()
 //	Color = vec4(div,div,div,1.0);
 
 //For normal viewing
-	Color = texture(texturesampler,pos);
+	Color = abs(texture(texturesampler,pos));
 }
