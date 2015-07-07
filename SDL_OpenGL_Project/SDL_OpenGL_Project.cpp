@@ -232,8 +232,8 @@ int main(int argc, char *argv[])
 	//filtering
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	//set renderTexture as our color attachment#0
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, renderTexture, 0);
 ///*
@@ -306,8 +306,8 @@ int main(int argc, char *argv[])
 	//filtering
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	//set renderTexture as our color attachment#0
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, divergence, 0);
 
@@ -460,7 +460,7 @@ int main(int argc, char *argv[])
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, Velocity0);	//add V0 as input texture
 		glUniform1i(addForce->uniform("velocity0"), 0);
-		glBindVertexArray(All_screen);
+		glBindVertexArray(inside);
 		//2nd draw call
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
@@ -476,7 +476,7 @@ int main(int argc, char *argv[])
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, Velocity1);
 		glUniform1i(advectVelocity->uniform("Ink"), 1);
-		glBindVertexArray(All_screen);
+		glBindVertexArray(inside);
 		//1st draw call
 		glDrawArrays(GL_TRIANGLES,0,6);
 		glBindVertexArray(0);//unbind VAO
@@ -495,7 +495,7 @@ int main(int argc, char *argv[])
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, Velocity0);
 		glUniform1i(divergenceShader->uniform("velocity0"), 0);
-		glBindVertexArray(All_screen);
+		glBindVertexArray(inside);
 		//4th draw call
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
@@ -505,7 +505,7 @@ int main(int argc, char *argv[])
 		//stage 5-------------------------------------------------
 		auto tempFBO = Jacobi_iter_FBO_1;
 		auto tempPressure = Pressure0;
-		for (auto i = 0; i < 10; i++)
+		for (auto i = 0; i < 15; i++)
 		{ 
 			glBindFramebuffer(GL_FRAMEBUFFER, tempFBO);
 			jacobiSolver->use();
@@ -518,7 +518,7 @@ int main(int argc, char *argv[])
 			glBindTexture(GL_TEXTURE_2D, tempPressure);
 			glUniform1i(jacobiSolver->uniform("pressure0"), 1);
 
-			glBindVertexArray(All_screen);
+			glBindVertexArray(inside);
 
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -549,7 +549,7 @@ int main(int argc, char *argv[])
 		glBindTexture(GL_TEXTURE_2D, Velocity0);
 		glUniform1i(subtractPressureGradient->uniform("velocity0"), 1);
 
-		glBindVertexArray(All_screen);
+		glBindVertexArray(inside);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		glBindVertexArray(0);
@@ -564,7 +564,7 @@ int main(int argc, char *argv[])
 		glUniform1i(texCopyShader->uniform("velocity1"), 0);
 
 
-		glBindVertexArray(All_screen);
+		glBindVertexArray(inside);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 
