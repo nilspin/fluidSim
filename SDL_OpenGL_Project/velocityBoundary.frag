@@ -1,12 +1,11 @@
 #version 400
 
-uniform sampler2D velocity0;
+uniform sampler2D velocity1;
 in vec2 pos;
 in vec2 OFFSET;
-layout(location=1) out vec4 velocity1;
+layout(location=0) out vec4 velocity0;
 
 void main()
 {
-	vec2 off = vec2(OFFSET.x/640, OFFSET.y/480);
-	velocity1 = texture(velocity0, pos + off)*(-1.0);
+	velocity0 = texture(velocity1, pos + OFFSET)*(-1.0);
 }

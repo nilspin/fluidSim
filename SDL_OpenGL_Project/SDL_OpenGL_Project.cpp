@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 	velocityBoundary->initFromFiles("boundary.vert", "velocityBoundary.frag");
 	velocityBoundary->addAttribute("position");
 	velocityBoundary->addAttribute("offset");
-	velocityBoundary->addUniform("velocity0");
+	velocityBoundary->addUniform("velocity1");
 
 	//add force--3
 	unique_ptr<ShaderProgram> addForce(new ShaderProgram());
@@ -147,8 +147,8 @@ int main(int argc, char *argv[])
 	glGenVertexArrays(1, &inside);
 	glBindVertexArray(inside);
 
-	float px = 1.0 / width; //px = 150 * px;
-	float py = 1.0 / height;  //py = 150 * py;
+	float px = 1.0 / width; px = 150 * px;
+	float py = 1.0 / height;  py = 150 * py;
 	float x = 1 - px;
 	float y = 1 - py;
 	/*Another VBO (this one is for fluid)*/
@@ -484,9 +484,17 @@ int main(int argc, char *argv[])
 //		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		//stage 3-----------------------------WE'RE SKIPPING THIS STAGE FOR NOW
+		glBindVertexArray(boundary);
+		
+		velocityBoundary->use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, Velocity1);
+		glUniform1i(velocityBoundary->uniform("velocity1"),0);
+		glBindVertexArray(boundary);
 
-//		glBindVertexArray(boundary);
-//		velocityBoundary->use();
+		glDrawArrays(GL_TRIANGLES, 0, 24);
+		glBindVertexArray(0);//unbind VAO
+		glBindTexture(GL_TEXTURE_2D, 0);
 		
 		//stage 4------------------------------------------------
 
@@ -617,6 +625,7 @@ int main(int argc, char *argv[])
 	}
 	
 	SDL_GL_DeleteContext(context);
+	SDL_DestroyWindow(window);
 	SDL_Quit();
 
 	return 0;
