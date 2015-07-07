@@ -505,7 +505,7 @@ int main(int argc, char *argv[])
 		//stage 5-------------------------------------------------
 		auto tempFBO = Jacobi_iter_FBO_1;
 		auto tempPressure = Pressure0;
-		for (auto i = 0; i < 15; i++)
+		for (auto i = 0; i < 10; i++)
 		{ 
 			glBindFramebuffer(GL_FRAMEBUFFER, tempFBO);
 			jacobiSolver->use();
