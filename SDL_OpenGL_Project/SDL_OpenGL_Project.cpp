@@ -530,6 +530,11 @@ int main(int argc, char *argv[])
 
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 
+			//------------------------------------------Now pressure boundary
+			pressureBoundary->use();
+			glBindVertexArray(boundary);
+
+			glDrawArrays(GL_TRIANGLES, 0, 24);
 			glBindVertexArray(0);
 			glBindTexture(GL_TEXTURE_2D, 0);
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
