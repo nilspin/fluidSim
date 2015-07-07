@@ -13,6 +13,7 @@
 #include<sstream>
 #include<vector>
 #include<fstream>
+#include<memory>
 //SDL shit
 #include<SDL.h>
 #include<SDL_opengl.h>
@@ -24,4 +25,4 @@
 
 
 //const int FPS = 30;
-#define GLSL(src) "#version 150 core\n" #src
+//#define GLSL(src) "#version 150 core\n" #src
