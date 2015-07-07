@@ -147,8 +147,8 @@ int main(int argc, char *argv[])
 	glGenVertexArrays(1, &inside);
 	glBindVertexArray(inside);
 
-	float px = 1.0 / width; px = 150 * px;
-	float py = 1.0 / height;  py = 150 * py;
+	float px = 1.0 / width; //px = 150 * px;
+	float py = 1.0 / height;  //py = 150 * py;
 	float x = 1 - px;
 	float y = 1 - py;
 	/*Another VBO (this one is for fluid)*/
