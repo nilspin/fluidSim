@@ -3,6 +3,7 @@
 in vec2 pos;
 uniform vec2 mousePos;
 uniform vec2 differenceLastPos;
+uniform vec2 iRes;
 uniform sampler2D velocity0;
 
 layout(location=1) out vec4 velocity1;
@@ -14,11 +15,11 @@ void main()
 	vec2 velocityIn = texture(velocity0,pos).xy;
 	velocityIn *= 0.99;
 
-	float x = mousePos.x/640 ;
-	float y = mousePos.y/480;
-	vec2 mouseNormalised = vec2(x,1-y);
+	vec2 temp = mousePos*iRes;
 
-	vec2 displacement = vec2(differenceLastPos.x/640 , differenceLastPos.y/480);
+	vec2 mouseNormalised = vec2(temp.x,1-temp.y);
+
+	vec2 displacement = differenceLastPos*iRes;
 
 	float dt = 1.0/60;
 	

@@ -15,10 +15,14 @@ GLuint boundary,boundaryVBO,boundaryIndexVBO;
 GLuint inside, insideVBO, insideIndexVBO;
 bool quit = false;
 
+int width = 640;
+int height = 480;
+
+GLfloat invWidth = 1.0 / width;
+GLfloat invHeight = 1.0 / height;
+
 int main(int argc, char *argv[])
 {
-	int width = 640;
-	int height = 480;
 #pragma region SDL_FUNCTIONS;
 	Uint32 start = NULL;
 	SDL_Init(SDL_INIT_EVERYTHING);
@@ -50,7 +54,7 @@ int main(int argc, char *argv[])
 	MainShader->initFromFiles("MainShader.vert", "MainShader.frag");
 	MainShader->addAttribute("position");
 	MainShader->addUniform("mousePos");
-	//	MainShader->addUniform("MVP");
+	MainShader->addUniform("iRes");
 
 	//another shader to sample from texture and draw on quadVBO
 	unique_ptr<ShaderProgram> quadProgram(new ShaderProgram());
@@ -74,6 +78,7 @@ int main(int argc, char *argv[])
 	velocityBoundary->addAttribute("offset");
 	velocityBoundary->addUniform("velocity1");
 
+
 	//add force--3
 	unique_ptr<ShaderProgram> addForce(new ShaderProgram());
 	addForce->initFromFiles("MainShader.vert","addForce.frag");
@@ -81,6 +86,7 @@ int main(int argc, char *argv[])
 	addForce->addUniform("mousePos");
 	addForce->addUniform("differenceLastPos");
 	addForce->addUniform("velocity0");
+	addForce->addUniform("iRes");
 
 	//divergence shader--4
 	unique_ptr<ShaderProgram> divergenceShader(new ShaderProgram());
@@ -440,6 +446,7 @@ int main(int argc, char *argv[])
 		glBindFramebuffer(GL_FRAMEBUFFER, MainFBO);
 		MainShader->use();
 		glUniform2f(MainShader->uniform("mousePos"), (int)e.motion.x, (int)e.motion.y);
+		glUniform2f(MainShader->uniform("iRes"), invWidth, invHeight);
 		glBindVertexArray(All_screen);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
@@ -455,6 +462,7 @@ int main(int argc, char *argv[])
 		//we need to do the following because unfortunately uniforms cannot be bound to VAOs
 		glUniform2f(addForce->uniform("mousePos"), (int)e.motion.x, (int)e.motion.y);
 		glUniform2f(addForce->uniform("differenceLastPos"), (int)e.motion.xrel, (int)e.motion.yrel);
+		glUniform2f(addForce->uniform("iRes"), invWidth, invHeight);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, Velocity0);	//add V0 as input texture
 		glUniform1i(addForce->uniform("velocity0"), 0);
