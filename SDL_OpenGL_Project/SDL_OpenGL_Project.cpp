@@ -50,11 +50,13 @@ int main(int argc, char *argv[])
 
 	//=============================================================================================
 	//Shader that contains main logic
+    /*
 	unique_ptr<ShaderProgram> MainShader(new ShaderProgram());
 	MainShader->initFromFiles("MainShader.vert", "MainShader.frag");
 	MainShader->addAttribute("position");
 	MainShader->addUniform("mousePos");
 	MainShader->addUniform("iRes");
+    */
 
 	//another shader to sample from texture and draw on quadVBO
 	unique_ptr<ShaderProgram> quadProgram(new ShaderProgram());
@@ -145,8 +147,8 @@ int main(int argc, char *argv[])
 	glBindBuffer(GL_ARRAY_BUFFER, All_screenVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(canvas), &canvas, GL_STATIC_DRAW);
 	//Assign attribs
-	glVertexAttribPointer(MainShader->attribute("position"), 2, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(MainShader->attribute("position"));
+//	glVertexAttribPointer(MainShader->attribute("position"), 2, GL_FLOAT, GL_FALSE, 0, 0);
+//	glEnableVertexAttribArray(MainShader->attribute("position"));
 	glBindVertexArray(0);	//unbind VAO
 
 	//Create Vertex Array Object
@@ -172,8 +174,8 @@ int main(int argc, char *argv[])
 	glBindBuffer(GL_ARRAY_BUFFER, fluid);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(fluidwall), &fluidwall, GL_STATIC_DRAW);	
 	//Assign attribs
-	glVertexAttribPointer(MainShader->attribute("position"), 2, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(MainShader->attribute("position"));
+//	glVertexAttribPointer(MainShader->attribute("position"), 2, GL_FLOAT, GL_FALSE, 0, 0);
+//	glEnableVertexAttribArray(MainShader->attribute("position"));
 	glBindVertexArray(0);	//unbind VAO
 
 	//Another VAO for boundary
