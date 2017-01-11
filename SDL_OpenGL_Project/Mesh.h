@@ -1,13 +1,12 @@
 //GL shit
-#include <Windows.h>
 #include <GL/glew.h>
-#include <gl/GLU.h>
-#include <gl/GL.h>
+#include <GL/glu.h>
+#include <GL/gl.h>
 
 //GLM shit
-#include <glm.hpp>
-#include<gtc/type_ptr.hpp>
-#include <gtc/matrix_transform.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 //std shit
 #include <iostream>

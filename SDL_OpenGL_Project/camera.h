@@ -9,12 +9,12 @@ Written by Hammad Mazhar
 #define CAMERA_H
 
 #include "stdafx.h"
-#include <glm.hpp>
-#include <gtx/transform.hpp>
-#include <gtc/quaternion.hpp>
-#include <gtx/quaternion.hpp>
-#include <gtc/matrix_transform.hpp>
-#include <gtc/type_ptr.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 enum CameraType {
 	ORTHO, FREE
