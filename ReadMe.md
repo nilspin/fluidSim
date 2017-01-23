@@ -6,7 +6,7 @@ Project to implement real-time 2D fluid on GPU, written in **C++** using **OpenG
 
 * [SDL2](http://libsdl.org/)
 * [GLEW](http://glew.sourceforge.net/)
-
+* [GLM](https://github.com/g-truc/glm/tags)
 
 Currently it renders :
 
