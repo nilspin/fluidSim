@@ -1,4 +1,4 @@
-#version 400
+#version 330
 
 layout(location=0) in vec3 quad_vertices;
 out vec2 pos;

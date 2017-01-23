@@ -1,4 +1,4 @@
-#version 400
+#version 330 
 
 in vec2 pos;
 uniform sampler2D velocity0;

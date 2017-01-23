@@ -28,11 +28,12 @@ int main(int argc, char *argv[])
 	SDL_Window *window = SDL_CreateWindow("SDL_project", 100, 100, width,height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE );
 	SDL_GLContext context = SDL_GL_CreateContext(window);
 
+    
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	//Init GLEW
 	GLenum err = glewInit();
 	if (GLEW_OK != err)
@@ -48,13 +49,10 @@ int main(int argc, char *argv[])
 
 	//=============================================================================================
 	//Shader that contains main logic
-    /*
 	unique_ptr<ShaderProgram> MainShader(new ShaderProgram());
 	MainShader->initFromFiles("MainShader.vert", "MainShader.frag");
 	MainShader->addAttribute("position");
 	MainShader->addUniform("mousePos");
-	MainShader->addUniform("iRes");
-    */
 
 	//another shader to sample from texture and draw on quadVBO
     unique_ptr<ShaderProgram> quadProgram(new ShaderProgram());
@@ -86,7 +84,6 @@ int main(int argc, char *argv[])
 	addForce->addUniform("mousePos");
 	addForce->addUniform("differenceLastPos");
 	addForce->addUniform("velocity0");
-	addForce->addUniform("iRes");
 
 	//divergence shader--4
 	unique_ptr<ShaderProgram> divergenceShader(new ShaderProgram());
@@ -145,16 +142,16 @@ int main(int argc, char *argv[])
 	glBindBuffer(GL_ARRAY_BUFFER, All_screenVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(canvas), &canvas, GL_STATIC_DRAW);
 	//Assign attribs
-//	glVertexAttribPointer(MainShader->attribute("position"), 2, GL_FLOAT, GL_FALSE, 0, 0);
-//	glEnableVertexAttribArray(MainShader->attribute("position"));
+	glVertexAttribPointer(MainShader->attribute("position"), 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(MainShader->attribute("position"));
 	glBindVertexArray(0);	//unbind VAO
 
 	//Create Vertex Array Object
 	glGenVertexArrays(1, &inside);
 	glBindVertexArray(inside);
 
-	float px = 1.0 / width; px = 15 * px;
-	float py = 1.0 / height;  py = 15 * py;
+	float px = 1.0 / width; px = 10 * px;
+	float py = 1.0 / height;  py = 10 * py;
 	float x = 1 - px;
 	float y = 1 - py;
 	/*Another VBO (this one is for fluid)*/
@@ -172,8 +169,8 @@ int main(int argc, char *argv[])
 	glBindBuffer(GL_ARRAY_BUFFER, fluid);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(fluidwall), &fluidwall, GL_STATIC_DRAW);	
 	//Assign attribs
-//	glVertexAttribPointer(MainShader->attribute("position"), 2, GL_FLOAT, GL_FALSE, 0, 0);
-//	glEnableVertexAttribArray(MainShader->attribute("position"));
+	glVertexAttribPointer(MainShader->attribute("position"), 2, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(MainShader->attribute("position"));
 	glBindVertexArray(0);	//unbind VAO
 
 	//Another VAO for boundary
@@ -446,7 +443,6 @@ int main(int argc, char *argv[])
 		glBindFramebuffer(GL_FRAMEBUFFER, MainFBO);
 		MainShader->use();
 		glUniform2f(MainShader->uniform("mousePos"), (int)e.motion.x, (int)e.motion.y);
-		glUniform2f(MainShader->uniform("iRes"), invWidth, invHeight);
 		glBindVertexArray(All_screen);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
@@ -462,7 +458,6 @@ int main(int argc, char *argv[])
 		//we need to do the following because unfortunately uniforms cannot be bound to VAOs
 		glUniform2f(addForce->uniform("mousePos"), (int)e.motion.x, (int)e.motion.y);
 		glUniform2f(addForce->uniform("differenceLastPos"), (int)e.motion.xrel, (int)e.motion.yrel);
-		glUniform2f(addForce->uniform("iRes"), invWidth, invHeight);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, Velocity0);	//add V0 as input texture
 		glUniform1i(addForce->uniform("velocity0"), 0);

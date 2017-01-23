@@ -1,4 +1,4 @@
-#version 400
+#version 330
 
 uniform sampler2D velocity1;
 uniform sampler2D Ink;

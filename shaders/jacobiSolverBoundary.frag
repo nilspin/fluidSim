@@ -1,4 +1,4 @@
-#version 400
+#version 330
 
 uniform sampler2D pressure0;
 in vec2 pos;
