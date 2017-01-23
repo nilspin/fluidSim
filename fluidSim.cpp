@@ -2,9 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "camera.h"
 #include "ShaderProgram.hpp"
-#include "Mesh.h"
 
 using namespace std;
 

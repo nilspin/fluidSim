@@ -22,12 +22,10 @@ include_directories(INCLUDE_DIRS ${INCLUDE_DIRS} include)
 
 set( project_sources
    fluidSim.cpp
-   camera.cpp
-   Mesh.cpp
    ShaderProgram.hpp
 )
 
-add_executable(${PROJECT_NAME} fluidSim.cpp camera.cpp Mesh.cpp)
+add_executable(${PROJECT_NAME} fluidSim.cpp)
 
 target_link_libraries(${PROJECT_NAME} ${LIBS})
 
