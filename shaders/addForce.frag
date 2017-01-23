@@ -27,7 +27,7 @@ void main()
 	float radius = 0.05;
 	if(abs(distance(pos,mouseNormalised)) < radius)
 	{
-		vec2 velocityOut = 0.000001*velocityIn + 0.00001*mouseVel;
+		vec2 velocityOut = 0.000001*velocityIn + 0.000001*mouseVel;
 		velocity1 = vec4(velocityOut,0,1.0);
 	}
 	else

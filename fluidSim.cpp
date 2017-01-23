@@ -25,16 +25,17 @@ int main(int argc, char *argv[])
 	Uint32 start = NULL;
 	SDL_Init(SDL_INIT_EVERYTHING);
 
-	SDL_Window *window = SDL_CreateWindow("SDL_project", 100, 100, width,height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE );
-	SDL_GLContext context = SDL_GL_CreateContext(window);
-
-    
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	//Init GLEW
+	
+	SDL_Window *window = SDL_CreateWindow("SDL_project", 100, 100, width,height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE );
+	SDL_GLContext context = SDL_GL_CreateContext(window);
+
+    
+    //Init GLEW
 	GLenum err = glewInit();
 	if (GLEW_OK != err)
 	{
@@ -612,9 +613,9 @@ int main(int argc, char *argv[])
 //		glUniform1i(quadProgram->uniform("pressure0"), 1);
 
 		//1st attribute : quad vertices
-		glEnableVertexAttribArray(0);	//note that this corresponds to the layout=0 in shader
-		glBindBuffer(GL_ARRAY_BUFFER,quad_vertexbuffer);
-		glVertexAttribPointer(
+//		glEnableVertexAttribArray(0);	//note that this corresponds to the layout=0 in shader
+//		glBindBuffer(GL_ARRAY_BUFFER,quad_vertexbuffer);
+/*		glVertexAttribPointer(
 			0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
 			3,                  // size
 			GL_FLOAT,           // type
@@ -622,12 +623,14 @@ int main(int argc, char *argv[])
 			0,                  // stride
 			0					// array buffer offset
 			);
-
+*/
+        glBindVertexArray(All_screen);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glDisableVertexAttribArray(0);
+        glBindVertexArray(0);
+		//glDisableVertexAttribArray(0);
 
 #pragma endregion DRAW_TO_SCREEN
-	
+
 		SDL_GL_SwapWindow(window);
 //		if (1000 / FPS > SDL_GetTicks() - start)
 //			SDL_Delay(1000 / FPS - (SDL_GetTicks() - start));
