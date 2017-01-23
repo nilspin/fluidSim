@@ -18,18 +18,16 @@ set(INCLUDE_DIRS ${INCLUDE_DIRS} ${OPENGL_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS} ${G
 set(LIBS ${LIBS} ${OPENGL_LIBRARY} ${SDL2_LIBRARIES} ${GLEW_LIBRARIES})
 
 #specify include directory
-#include_directories(include)
 include_directories(INCLUDE_DIRS ${INCLUDE_DIRS} include)
 
-#aux_source_directory(. SRC_LIST)
 set( project_sources
-   SDL_OpenGL_Project.cpp
+   fluidSim.cpp
    camera.cpp
    Mesh.cpp
    ShaderProgram.hpp
 )
 
-add_executable(${PROJECT_NAME} SDL_OpenGL_Project.cpp camera.cpp Mesh.cpp)
+add_executable(${PROJECT_NAME} fluidSim.cpp camera.cpp Mesh.cpp)
 
 target_link_libraries(${PROJECT_NAME} ${LIBS})
 
