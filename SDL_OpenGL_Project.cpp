@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
     */
 
 	//another shader to sample from texture and draw on quadVBO
-	unique_ptr<ShaderProgram> quadProgram(new ShaderProgram());
+    unique_ptr<ShaderProgram> quadProgram(new ShaderProgram());
 	quadProgram->initFromFiles("quadProgram.vert", "quadProgram.frag");
 	quadProgram->addAttribute("quad_vertices");
 	quadProgram->addUniform("texturesampler");

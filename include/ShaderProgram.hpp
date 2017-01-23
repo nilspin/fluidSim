@@ -19,6 +19,7 @@ work in the exact same way.
 #include<GL/glu.h>
 #include<GL/gl.h>
 
+#include <stdexcept>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -81,7 +82,7 @@ private:
 		if (shaderId == 0)
 		{
 			// Display the shader log via a runtime_error
-			throw std::runtime_error("Could not create shader of type " + shaderTypeString + ": " + getInfoLog(ObjectType::SHADER, shaderId));
+            throw std::runtime_error("Could not create shader of type " + shaderTypeString + ": " + getInfoLog(ObjectType::SHADER, shaderId));
 		}
 
 		// Get the source string as a pointer to an array of characters

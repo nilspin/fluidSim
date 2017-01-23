@@ -9,10 +9,10 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <glm.hpp>
+#include <glm/glm.hpp>
 #include <sstream>
 #include <string>
-#include <gl/GLU.h>
+#include <GL/glu.h>
 
 class ObjLoader
 {
