@@ -12,8 +12,7 @@
 #include<fstream>
 #include<memory>
 //SDL shit
-#include<SDL2/SDL.h>
-#include<SDL2/SDL_opengl.h>
+#include<SDL.h>
 
 //GLM shit
 #include<glm/glm.hpp>

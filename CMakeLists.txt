@@ -2,10 +2,10 @@ project(fluidSim)
 cmake_minimum_required(VERSION 2.8)
 
 # Useful CMake options for Qt projects
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_CXX_FLAGS "-std=c++0x")
-cmake_policy(SET CMP0004 OLD)
+set(CMAKE_CXX_FLAGS "-std=c++11")
 
 
 # Search desired Qt packages
@@ -14,11 +14,12 @@ find_package(SDL2 REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(glm REQUIRED)
 
-set(INCLUDE_DIRS ${INCLUDE_DIRS} ${OPENGL_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS})
+set(INCLUDE_DIRS ${INCLUDE_DIRS} ${OPENGL_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS} 
+                ${GLEW_INCLUDE_DIRS} ${GLM_INCLUDE_DIR}  include)
 set(LIBS ${LIBS} ${OPENGL_LIBRARY} ${SDL2_LIBRARIES} ${GLEW_LIBRARIES})
 
 #specify include directory
-include_directories(INCLUDE_DIRS ${INCLUDE_DIRS} include)
+include_directories(${INCLUDE_DIRS})
 
 set( project_sources
    fluidSim.cpp

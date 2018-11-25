@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	
-	SDL_Window *window = SDL_CreateWindow("SDL_project", 100, 100, width,height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE );
+	SDL_Window *window = SDL_CreateWindow("Fluid Simulation", 100, 100, width,height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE );
 	SDL_GLContext context = SDL_GL_CreateContext(window);
 
     
